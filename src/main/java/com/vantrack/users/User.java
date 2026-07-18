@@ -1,9 +1,6 @@
 package com.vantrack.users;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +13,7 @@ import java.util.UUID;
 public class User {
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "name", nullable = false, length = 200)
@@ -28,7 +26,6 @@ public class User {
     private String password;
 
     @Column(name = "role", nullable = false, length = 6)
-    private String role;
-
-
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 }
