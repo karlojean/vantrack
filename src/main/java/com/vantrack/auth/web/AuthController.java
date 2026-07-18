@@ -1,6 +1,7 @@
-package com.vantrack.auth;
+package com.vantrack.auth.web;
 
-import com.vantrack.auth.dto.LoginRequest;
+import com.vantrack.auth.LoginUseCase;
+import com.vantrack.auth.web.dto.LoginRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

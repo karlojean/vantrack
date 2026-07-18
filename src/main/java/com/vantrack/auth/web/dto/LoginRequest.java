@@ -1,4 +1,4 @@
-package com.vantrack.auth.dto;
+package com.vantrack.auth.web.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
