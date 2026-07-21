@@ -19,8 +19,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public void login(@RequestBody @Valid LoginRequest request) {
-        loginUseCase.execute(request);
+    public String login(@RequestBody @Valid LoginRequest request) {
+        return loginUseCase.execute(request);
     }
 
 

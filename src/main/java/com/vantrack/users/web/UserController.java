@@ -3,6 +3,7 @@ package com.vantrack.users.web;
 import com.vantrack.users.CreateUserUseCase;
 import com.vantrack.users.web.dto.CreateUserRequest;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +19,8 @@ public class UserController {
         this.createUserUseCase = createUserUseCase;
     }
 
-    // TODO add pre authorize for ADMIN user
     @PostMapping
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     void createUser(@RequestBody @Valid CreateUserRequest request) {
         createUserUseCase.execute(request);
     }

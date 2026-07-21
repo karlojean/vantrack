@@ -10,3 +10,6 @@ logging:
   level:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
+    org:
+      springframework:
+        security=TRACE:

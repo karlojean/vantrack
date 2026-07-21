@@ -3,6 +3,7 @@ package com.vantrack.shared.exception.advice;
 import com.vantrack.shared.exception.BusinessRoleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -27,6 +28,17 @@ public class GlobalExceptionHandler {
                 "Ocorreu um erro inesperado no servidor. Tente novamente mais tarde."
         );
         problemDetail.setTitle("Erro Interno do Servidor");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN,
+                "Você não possui permissão para acessar este recurso."
+        );
+        problemDetail.setTitle("Acesso Negado");
 
         return problemDetail;
     }

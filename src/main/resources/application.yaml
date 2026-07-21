@@ -12,3 +12,7 @@ spring:
     schemas: public
 server:
   port: 8080
+
+
+jwt:
+  secret: esta-chave-precisa-ter-pelo-menos-32-caracteres-de-tamanho
