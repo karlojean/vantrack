@@ -1,6 +1,6 @@
 package com.vantrack.routes;
 
-import com.vantrack.van.Van;
+import com.vantrack.vans.Van;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +22,4 @@ public class Route {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "van_id", nullable = false)
     private Van van;
-
-
 }

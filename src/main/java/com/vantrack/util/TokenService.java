@@ -1,4 +1,5 @@
 package com.vantrack.util;
+import com.vantrack.users.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -28,11 +29,15 @@ public class TokenService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
+
+        User user = (User) authentication.getPrincipal();
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("minha-api")
                 .issuedAt(now)
                 .expiresAt(now.plus(10, ChronoUnit.HOURS))
                 .subject(authentication.getName())
+                .claim("userId", user.getId().toString())
                 .claim("scope", scope)
                 .build();
 
