@@ -2,17 +2,17 @@ package com.vantrack.vans.web;
 
 import com.vantrack.users.User;
 import com.vantrack.vans.CreateVanUseCase;
+import com.vantrack.vans.ListAllVansUseCase;
 import com.vantrack.vans.Van;
 import com.vantrack.vans.web.dto.CreateVanRequest;
+import com.vantrack.vans.web.dto.VanFilter;
 import com.vantrack.vans.web.dto.VanResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,9 +22,11 @@ public class VanController {
 
 
     private final CreateVanUseCase createVanUseCase;
+    private final ListAllVansUseCase listAllVansUseCase;
 
-    public VanController(CreateVanUseCase createVanUseCase) {
+    public VanController(CreateVanUseCase createVanUseCase, ListAllVansUseCase listAllVansUseCase) {
         this.createVanUseCase = createVanUseCase;
+        this.listAllVansUseCase = listAllVansUseCase;
     }
 
     @PostMapping
@@ -36,6 +38,12 @@ public class VanController {
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
         return createVanUseCase.execute(request, userId);
     };
+
+    @GetMapping
+    public List<VanResponse> listAllVans(@ModelAttribute VanFilter filter) {
+        return listAllVansUseCase.execute(filter);
+    }
+
 
 
 }
