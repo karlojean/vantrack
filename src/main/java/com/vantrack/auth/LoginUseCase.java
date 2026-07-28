@@ -1,7 +1,7 @@
 package com.vantrack.auth;
 
 import com.vantrack.auth.web.dto.LoginRequest;
-import com.vantrack.shared.exception.BusinessRoleException;
+import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import com.vantrack.util.TokenService;
@@ -27,11 +27,11 @@ public class LoginUseCase {
 
     public String execute(LoginRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(
-                BusinessRoleException::new
+                BusinessRuleException::new
         );
 
         if(!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new BusinessRoleException();
+            throw new BusinessRuleException();
         }
 
         Authentication authentication = authenticationManager.authenticate(

@@ -1,6 +1,6 @@
 package com.vantrack.shared.exception.advice;
 
-import com.vantrack.shared.exception.BusinessRoleException;
+import com.vantrack.shared.exception.BusinessRuleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BusinessRoleException.class)
-    public ProblemDetail handleBusinessRole(BusinessRoleException ex) {
+    @ExceptionHandler(BusinessRuleException.class)
+    public ProblemDetail handleBusinessRole(BusinessRuleException ex) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(
                 ex.getStatus(),
                 ex.getMessage()

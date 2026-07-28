@@ -1,7 +1,7 @@
 package com.vantrack.routes;
 
 import com.vantrack.routes.web.dto.CreateRouteRequest;
-import com.vantrack.shared.exception.BusinessRoleException;
+import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.shared.exception.EntityNotFoundException;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
@@ -43,7 +43,7 @@ public class CreateRouteUseCase {
 
         boolean userIsDriver = userId == van.getDriver().getId();
         if(!userIsDriver && user.getRole() != UserRole.ADMIN) {
-            throw new BusinessRoleException(
+            throw new BusinessRuleException(
                     "Erro ao criar rota",
                     "O usuário não tem permissão para criar um rota para essa van",
                     HttpStatus.FORBIDDEN

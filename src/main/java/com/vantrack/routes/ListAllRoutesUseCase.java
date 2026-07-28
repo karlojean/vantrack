@@ -1,7 +1,7 @@
 package com.vantrack.routes;
 
 import com.vantrack.routes.web.dto.RouteResponse;
-import com.vantrack.shared.exception.BusinessRoleException;
+import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import com.vantrack.users.UserRole;
@@ -24,7 +24,7 @@ public class ListAllRoutesUseCase {
 
     public List<RouteResponse> execute(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessRoleException(
+                .orElseThrow(() -> new BusinessRuleException(
                         "Erro ao buscar usuário",
                         "Erro ao encontrar usuário autenticado",
                         HttpStatus.UNAUTHORIZED

@@ -4,7 +4,7 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "driverId": "4034d14b-03ac-40e3-aba4-71950283e852",
+  "driverId": "31ea494e-2d08-437a-9d13-cb921db68795",
   "plate": "OAS1SWW"
 }
 

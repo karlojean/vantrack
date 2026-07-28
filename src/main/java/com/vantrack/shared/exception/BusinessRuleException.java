@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 @Data
 @NoArgsConstructor(force = true)
 @EqualsAndHashCode(callSuper = true)
-public class BusinessRoleException extends RuntimeException {
+public class BusinessRuleException extends RuntimeException {
     String title;
     HttpStatus status;
-    public BusinessRoleException(String title, String message, HttpStatus status){
+    public BusinessRuleException(String title, String message, HttpStatus status){
         super(message);
         this.title = title;
         this.status = status;
