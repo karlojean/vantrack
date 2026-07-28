@@ -1,0 +1,14 @@
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@vantrack.com",
+  "password": "admin123"
+}
+> {%
+    let token = response.body;
+
+    client.global.set("authToken", token)
+    console.log("Token gerado com sucesso!");
+  %}
+

@@ -1,0 +1,9 @@
+###
+POST http://localhost:8080/routes
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "EE Jose Maria - Manha",
+  "vanId": "69fc810d-9a32-416e-a0bc-f809fc198a39"
+}

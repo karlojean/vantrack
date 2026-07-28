@@ -1,0 +1,9 @@
+### Find All Users
+GET {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### Get Me
+GET {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
