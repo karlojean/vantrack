@@ -8,9 +8,12 @@ import com.vantrack.users.web.dto.CreateUserRequest;
 import com.vantrack.users.web.dto.UserFilter;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -39,10 +42,17 @@ public class UserController {
         return listAllUsersUseCase.execute(filter);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/me")
+    User getMe(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
+        return findUserByIdUseCase.execute(userId);
+    }
+
+    @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     User findUserById(@PathVariable UUID id) {
         return findUserByIdUseCase.execute(id);
     }
-
 }
