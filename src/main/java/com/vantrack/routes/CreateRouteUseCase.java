@@ -41,7 +41,8 @@ public class CreateRouteUseCase {
 
 
 
-        boolean userIsDriver = userId == van.getDriver().getId();
+        boolean userIsDriver = userId.equals(van.getDriver().getId());
+
         if(!userIsDriver && user.getRole() != UserRole.ADMIN) {
             throw new BusinessRuleException(
                     "Erro ao criar rota",
