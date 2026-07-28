@@ -1,3 +1,4 @@
+### Admin Login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
@@ -12,3 +13,17 @@ Content-Type: application/json
     console.log("Token gerado com sucesso!");
   %}
 
+### Driver Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.driver@gmail.com",
+  "password": "secret123"
+}
+> {%
+    let token = response.body;
+
+    client.global.set("authTokenDriver", token)
+    console.log("Token do usuário driver gerado com sucesso!");
+%}

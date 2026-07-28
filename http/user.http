@@ -7,3 +7,15 @@ Authorization: Bearer {{authToken}}
 GET {{baseUrl}}/users/me
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+### Create User
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "email": "john.driver@gmail.com",
+  "password": "secret123",
+  "name": "John Driver",
+  "role": "DRIVER"
+}
