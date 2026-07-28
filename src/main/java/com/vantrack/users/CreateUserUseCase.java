@@ -2,6 +2,7 @@ package com.vantrack.users;
 
 import com.vantrack.shared.exception.EmailAlreadyExistsException;
 import com.vantrack.users.web.dto.CreateUserRequest;
+import com.vantrack.users.web.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,7 @@ public class CreateUserUseCase {
     }
 
     @Transactional
-    public void execute(CreateUserRequest request) {
+    public UserResponse execute(CreateUserRequest request) {
         if(repository.existsByEmail(request.email())) {
             throw new EmailAlreadyExistsException(request.email());
         }
@@ -26,7 +27,7 @@ public class CreateUserUseCase {
         User newUser = request.toEntity();
         newUser.setPassword(passwordEncoder.encode(request.password()));
 
-        repository.save(newUser);
+        return UserResponse.fromEntity(repository.save(newUser));
     }
 
 }

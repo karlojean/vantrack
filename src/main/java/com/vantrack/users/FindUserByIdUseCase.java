@@ -1,6 +1,7 @@
 package com.vantrack.users;
 
 import com.vantrack.shared.exception.EntityNotFoundException;
+import com.vantrack.users.web.dto.UserResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -14,9 +15,11 @@ public class FindUserByIdUseCase {
         this.userRepository = userRepository;
     }
 
-    public User execute(UUID id) {
-        return userRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Usuário")
+    public UserResponse execute(UUID id) {
+        return UserResponse.fromEntity(
+                userRepository.findById(id).orElseThrow(
+                        () -> new EntityNotFoundException("Usuário")
+                )
         );
     }
 

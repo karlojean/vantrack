@@ -6,6 +6,7 @@ import com.vantrack.users.ListAllUsersUseCase;
 import com.vantrack.users.User;
 import com.vantrack.users.web.dto.CreateUserRequest;
 import com.vantrack.users.web.dto.UserFilter;
+import com.vantrack.users.web.dto.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,18 +33,18 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-    void createUser(@RequestBody @Valid CreateUserRequest request) {
-        createUserUseCase.execute(request);
+    UserResponse createUser(@RequestBody @Valid CreateUserRequest request) {
+        return createUserUseCase.execute(request);
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-    List<User> listAllUsers(@ModelAttribute UserFilter filter){
+    List<UserResponse> listAllUsers(@ModelAttribute UserFilter filter){
         return listAllUsersUseCase.execute(filter);
     }
 
     @GetMapping("/me")
-    User getMe(
+    UserResponse getMe(
             @AuthenticationPrincipal Jwt jwt
     ) {
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
@@ -52,7 +53,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-    User findUserById(@PathVariable UUID id) {
+    UserResponse findUserById(@PathVariable UUID id) {
         return findUserByIdUseCase.execute(id);
     }
 }

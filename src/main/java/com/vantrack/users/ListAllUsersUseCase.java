@@ -1,6 +1,7 @@
 package com.vantrack.users;
 
 import com.vantrack.users.web.dto.UserFilter;
+import com.vantrack.users.web.dto.UserResponse;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ public class ListAllUsersUseCase {
         this.userRepository = userRepository;
     }
 
-    public List<User> execute(UserFilter filter) {
+    public List<UserResponse> execute(UserFilter filter) {
 
         Specification<User> spec = Specification.where((root, query, cb) -> cb.conjunction());
 
@@ -27,7 +28,7 @@ public class ListAllUsersUseCase {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("role"), filter.role()));
         }
 
-        return userRepository.findAll(spec);
+        return userRepository.findAll(spec).stream().map(UserResponse::fromEntity).toList();
     }
 
 }
