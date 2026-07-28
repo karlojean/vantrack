@@ -32,6 +32,14 @@ public class CreateVanUseCase {
                         HttpStatus.UNAUTHORIZED
                 ));
 
+        if(vanRepository.existsByPlate(request.plate())) {
+            throw new BusinessRuleException(
+                    "Erro ao criar van",
+                    "A Placa informada já esta cadastrada em nosso sistema",
+                    HttpStatus.CONFLICT
+            );
+        }
+
         boolean isCreatingForAnotherUser = !user.getId().equals(request.driverId());
         if (user.getRole() != UserRole.ADMIN && isCreatingForAnotherUser) {
             throw new BusinessRuleException(
