@@ -5,6 +5,7 @@ import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import com.vantrack.util.TokenService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,11 +28,13 @@ public class LoginUseCase {
 
     public String execute(LoginRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(
-                BusinessRuleException::new
+                () -> new BusinessRuleException("Falha na autenticação",
+                "E-mail ou senha inválidos", HttpStatus.UNAUTHORIZED)
         );
 
         if(!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new BusinessRuleException();
+            throw new BusinessRuleException("Falha na autenticação",
+                    "E-mail ou senha inválidos", HttpStatus.UNAUTHORIZED);
         }
 
         Authentication authentication = authenticationManager.authenticate(

@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Data
-@NoArgsConstructor(force = true)
 @EqualsAndHashCode(callSuper = true)
 public class BusinessRuleException extends RuntimeException {
     String title;
