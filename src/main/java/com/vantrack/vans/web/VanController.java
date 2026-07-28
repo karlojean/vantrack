@@ -1,9 +1,7 @@
 package com.vantrack.vans.web;
 
-import com.vantrack.users.User;
 import com.vantrack.vans.CreateVanUseCase;
 import com.vantrack.vans.ListAllVansUseCase;
-import com.vantrack.vans.Van;
 import com.vantrack.vans.web.dto.CreateVanRequest;
 import com.vantrack.vans.web.dto.VanFilter;
 import com.vantrack.vans.web.dto.VanResponse;
@@ -28,7 +26,6 @@ public class VanController {
         this.createVanUseCase = createVanUseCase;
         this.listAllVansUseCase = listAllVansUseCase;
     }
-
     @PostMapping
     public VanResponse createVan(
             @RequestBody @Valid CreateVanRequest request,
@@ -37,13 +34,10 @@ public class VanController {
 
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
         return createVanUseCase.execute(request, userId);
-    };
+    }
 
     @GetMapping
     public List<VanResponse> listAllVans(@ModelAttribute VanFilter filter) {
         return listAllVansUseCase.execute(filter);
     }
-
-
-
 }

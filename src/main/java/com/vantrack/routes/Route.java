@@ -14,6 +14,7 @@ import java.util.UUID;
 public class Route {
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "name", nullable = false, length = 200)
