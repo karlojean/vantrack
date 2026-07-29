@@ -1,12 +1,9 @@
 package com.vantrack.shared.exception;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@Getter
 public class BusinessRuleException extends RuntimeException {
     String title;
     HttpStatus status;
