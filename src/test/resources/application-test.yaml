@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: false
+    open-in-view: false
+  flyway:
+    enabled: true
+
+jwt:
+  secret: vantrack-integration-test-secret-key-0123456789
+
+logging:
+  level:
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.testcontainers: INFO
+    com.github.dockerjava: WARN

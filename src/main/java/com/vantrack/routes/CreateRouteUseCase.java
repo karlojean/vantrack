@@ -1,6 +1,7 @@
 package com.vantrack.routes;
 
 import com.vantrack.routes.web.dto.CreateRouteRequest;
+import com.vantrack.routes.web.dto.RouteResponse;
 import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.shared.exception.EntityNotFoundException;
 import com.vantrack.users.User;
@@ -28,7 +29,7 @@ public class CreateRouteUseCase {
     }
 
     @Transactional
-    public Route execute(CreateRouteRequest request, UUID userId) {
+    public RouteResponse execute(CreateRouteRequest request, UUID userId) {
         Van van = vanRepository.findById(request.vanId())
                 .orElseThrow(
                         () -> new EntityNotFoundException("Van")
@@ -54,7 +55,7 @@ public class CreateRouteUseCase {
         Route route = request.toDomain();
         route.setVan(van);
 
-        return routeRepository.save(route);
+        return RouteResponse.fromEntity(routeRepository.save(route));
     }
 
 }

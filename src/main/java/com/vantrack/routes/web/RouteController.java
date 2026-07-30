@@ -2,7 +2,6 @@ package com.vantrack.routes.web;
 
 import com.vantrack.routes.CreateRouteUseCase;
 import com.vantrack.routes.ListAllRoutesUseCase;
-import com.vantrack.routes.Route;
 import com.vantrack.routes.web.dto.CreateRouteRequest;
 import com.vantrack.routes.web.dto.RouteResponse;
 import jakarta.validation.Valid;
@@ -27,7 +26,7 @@ public class RouteController {
     }
 
     @PostMapping
-    Route createRoute(
+    RouteResponse createRoute(
             @RequestBody @Valid CreateRouteRequest request,
             @AuthenticationPrincipal Jwt jwt
             ) {
@@ -36,7 +35,7 @@ public class RouteController {
     }
 
     @GetMapping
-    List<RouteResponse> createRoute(
+    List<RouteResponse> ListAllRoutes(
             @AuthenticationPrincipal Jwt jwt
     ) {
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
