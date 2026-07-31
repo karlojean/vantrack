@@ -1,0 +1,16 @@
+### Start Trip
+# Requer token de DRIVER (SCOPE_DRIVER) e o motorista precisa ser o dono da van da rota.
+# Usar {{authToken}} (admin) aqui retorna 403.
+POST {{baseUrl}}/trips/start
+Content-Type: application/json
+Authorization: Bearer {{authTokenDriver}}
+
+{
+  "routeId": "e64d930e-2e0e-48cc-9c8c-1e219bbaf6ed",
+  "latitude": -23.550520,
+  "longitude": -46.633308
+}
+> {%
+    client.global.set("tripId", response.body.id);
+    console.log("Viagem iniciada: " + response.body.id);
+%}

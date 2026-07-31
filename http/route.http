@@ -1,5 +1,5 @@
-###
-POST http://localhost:8080/routes
+### Create Route
+POST {{baseUrl}}/routes
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -8,7 +8,7 @@ Authorization: Bearer {{authToken}}
   "vanId": "e64d930e-2e0e-48cc-9c8c-1e219bbaf6ed"
 }
 
-### List all Routes
-GET http://localhost:8080/routes
+### Find All Routes
+GET {{baseUrl}}/routes
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
