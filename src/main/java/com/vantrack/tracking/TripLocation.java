@@ -1,9 +1,8 @@
 package com.vantrack.tracking;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.vantrack.trips.Trip;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +17,7 @@ import java.util.UUID;
 public class TripLocation {
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "latitude", nullable = false, precision = 9, scale = 6)
@@ -29,5 +29,8 @@ public class TripLocation {
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
-
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "trip_id", nullable = false)
+    private Trip trip;
 }

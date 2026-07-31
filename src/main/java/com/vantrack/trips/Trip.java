@@ -15,6 +15,7 @@ import java.util.UUID;
 public class Trip {
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -22,13 +23,12 @@ public class Trip {
     private Route route;
 
     @Column(name = "status", nullable = false, length = 9)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TripStatus status;
 
     @Column(name = "started_at")
     private OffsetDateTime startedAt;
 
     @Column(name = "ended_at")
     private OffsetDateTime endedAt;
-
-
 }
