@@ -1,11 +1,11 @@
 ### Create Route
 POST {{baseUrl}}/routes
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenDriver}}
 
 {
   "name": "EE Jose Maria - Tarde",
-  "vanId": "e64d930e-2e0e-48cc-9c8c-1e219bbaf6ed"
+  "vanId": "1052b0fc-5314-4f8f-89ab-5b53bef7cf42"
 }
 
 ### Find All Routes

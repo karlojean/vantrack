@@ -1,11 +1,11 @@
 ### Create Van
 POST {{baseUrl}}/vans
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenDriver}}
 
 {
-  "driverId": "31ea494e-2d08-437a-9d13-cb921db68795",
-  "plate": "OAS1SWW"
+  "driverId": "4034d14b-03ac-40e3-aba4-71950283e852",
+  "plate": "OPH1221"
 }
 
 ### Find All Vans

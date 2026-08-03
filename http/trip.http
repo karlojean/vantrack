@@ -6,7 +6,7 @@ Content-Type: application/json
 Authorization: Bearer {{authTokenDriver}}
 
 {
-  "routeId": "e64d930e-2e0e-48cc-9c8c-1e219bbaf6ed",
+  "routeId": "7495648e-a9e1-47cd-abde-96e66c220bfa",
   "latitude": -23.550520,
   "longitude": -46.633308
 }
@@ -14,3 +14,9 @@ Authorization: Bearer {{authTokenDriver}}
     client.global.set("tripId", response.body.id);
     console.log("Viagem iniciada: " + response.body.id);
 %}
+
+### Finish Trip
+
+PUT {{baseUrl}}/trips/cf088149-0ddc-483f-8f8c-f995c6c24f84/finish
+Content-Type: application/json
+Authorization: Bearer {{authTokenDriver}}
