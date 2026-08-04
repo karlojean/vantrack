@@ -1,6 +1,7 @@
 package com.vantrack.trips;
 
 import com.vantrack.routes.Route;
+import com.vantrack.tracking.TripLocation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

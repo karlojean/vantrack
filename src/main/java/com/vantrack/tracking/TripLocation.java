@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -27,6 +28,7 @@ public class TripLocation {
     private BigDecimal longitude;
 
     @Column(name = "created_at")
+    @CreationTimestamp
     private OffsetDateTime createdAt;
 
     @NotNull

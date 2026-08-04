@@ -1,0 +1,24 @@
+### Send Location
+# Requer token de DRIVER (SCOPE_DRIVER) e a viagem precisa pertencer ao motorista autenticado.
+# Rodar antes o "Driver Login" (auth.http) e o "Start Trip" (trip.http) para popular {{tripId}}.
+POST {{baseUrl}}/trackings
+Content-Type: application/json
+Authorization: Bearer {{authTokenDriver}}
+
+{
+  "tripId": "{{tripId}}",
+  "latitude": -23.550520,
+  "longitude": -46.633308
+}
+
+### Send Location - próximo ponto (simula deslocamento)
+POST {{baseUrl}}/trackings
+Content-Type: application/json
+Authorization: Bearer {{authTokenDriver}}
+
+{
+  "tripId": "{{tripId}}",
+  "latitude": -23.551900,
+  "longitude": -46.634500
+}
+
