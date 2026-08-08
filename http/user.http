@@ -14,7 +14,7 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "email": "parent@vantrack.com",
+  "email": "parent2@vantrack.com",
   "password": "secret123",
   "name": "Parent",
   "role": "PARENT"

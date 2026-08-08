@@ -12,3 +12,13 @@ Authorization: Bearer {{authTokenDriver}}
 GET {{baseUrl}}/routes
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+### Add Parent
+POST {{baseUrl}}/routes/7495648e-a9e1-47cd-abde-96e66c220bfa/parent
+Content-Type: application/json
+Authorization: Bearer {{authTokenDriver}}
+
+{
+  "parentId": "e90a3940-bb85-4f35-9827-6812da344af1",
+  "studentName": "Valeria Valentina"
+}

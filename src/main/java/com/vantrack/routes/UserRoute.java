@@ -15,6 +15,7 @@ import java.util.UUID;
 public class UserRoute {
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID )
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -24,9 +25,8 @@ public class UserRoute {
     @Column(name = "student_name", nullable = false, length = 200)
     private String studentName;
 
-
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User parent;
 }
