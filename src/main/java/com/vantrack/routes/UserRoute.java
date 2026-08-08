@@ -1,6 +1,8 @@
 package com.vantrack.routes;
 
+import com.vantrack.users.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,4 +25,8 @@ public class UserRoute {
     private String studentName;
 
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

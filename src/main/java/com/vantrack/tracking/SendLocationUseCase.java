@@ -8,6 +8,7 @@ import com.vantrack.trips.TripRepository;
 import com.vantrack.trips.TripStatus;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +21,14 @@ public class SendLocationUseCase {
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
     private final TripLocationRepository tripLocationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public SendLocationUseCase(UserRepository userRepository, TripRepository tripRepository, TripLocationRepository tripLocationRepository) {
+
+    public SendLocationUseCase(UserRepository userRepository, TripRepository tripRepository, TripLocationRepository tripLocationRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.tripRepository = tripRepository;
         this.tripLocationRepository = tripLocationRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -59,6 +63,8 @@ public class SendLocationUseCase {
         location.setTrip(trip);
 
         tripLocationRepository.save(location);
+
+        eventPublisher.publishEvent(new SendLocationEvent(location));
     }
 
 }

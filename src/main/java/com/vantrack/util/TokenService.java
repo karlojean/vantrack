@@ -33,7 +33,7 @@ public class TokenService {
         User user = (User) authentication.getPrincipal();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("minha-api")
+                .issuer("vantrack-api")
                 .issuedAt(now)
                 .expiresAt(now.plus(10, ChronoUnit.HOURS))
                 .subject(authentication.getName())

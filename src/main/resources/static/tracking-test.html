@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VanTrack — Teste do TrackingNotifier</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #10141c;
+            --panel: #182030;
+            --line: #263145;
+            --text: #e6ecf5;
+            --muted: #8fa0bb;
+            --accent: #4da3ff;
+            --ok: #35c88b;
+            --err: #ff6b6b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.5 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+        }
+
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
+        .sub { color: var(--muted); margin: 0 0 24px; }
+        code { background: #0d1119; padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+
+        .grid { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+
+        label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+        input {
+            width: 100%; padding: 8px 10px; border-radius: 6px;
+            border: 1px solid var(--line); background: #0d1119; color: var(--text);
+            font: inherit;
+        }
+        input:focus { outline: none; border-color: var(--accent); }
+
+        .row { display: flex; gap: 8px; }
+        .row > * { flex: 1; }
+
+        button {
+            margin-top: 12px; padding: 9px 14px; border-radius: 6px; border: 1px solid var(--line);
+            background: #22304a; color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+        }
+        button:hover:not(:disabled) { border-color: var(--accent); }
+        button:disabled { opacity: .45; cursor: not-allowed; }
+        button.primary { background: var(--accent); border-color: var(--accent); color: #06121f; }
+        button.danger { background: #3a2029; border-color: #5b2d38; }
+
+        .status { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 12px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--err); flex: none; }
+        .dot.on { background: var(--ok); }
+        .dot.wait { background: #e0b341; }
+
+        #log {
+            height: 180px; overflow-y: auto; background: #0d1119; border: 1px solid var(--line);
+            border-radius: 6px; padding: 10px; font-family: ui-monospace, monospace; font-size: 12px;
+        }
+        #log div { padding: 1px 0; color: var(--muted); }
+        #log .ok { color: var(--ok); }
+        #log .err { color: var(--err); }
+        #log .in { color: var(--accent); }
+
+        table { width: 100%; border-collapse: collapse; font-family: ui-monospace, monospace; font-size: 12px; }
+        th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+        td { padding: 6px 8px; border-bottom: 1px solid #1f2839; }
+        tbody tr:first-child td { color: var(--accent); }
+        .empty { color: var(--muted); padding: 16px 8px; }
+
+        canvas { width: 100%; height: 240px; background: #0d1119; border: 1px solid var(--line); border-radius: 6px; }
+        .counter { float: right; color: var(--muted); font-weight: 400; }
+    </style>
+</head>
+<body>
+
+<h1>VanTrack — Teste do TrackingNotifier</h1>
+<p class="sub">
+    O <strong>PARENT</strong> assina <code>/topic/trips/{tripId}</code> via STOMP (token no frame CONNECT)
+    e o <strong>DRIVER</strong> alimenta o tópico com <code>POST /trackings</code>.
+    O que aparece abaixo é o que o <code>TrackingNotifier</code> publicou.
+</p>
+
+<div class="grid">
+    <div>
+        <div class="panel">
+            <h2>Base URL</h2>
+            <input id="baseUrl" value="http://localhost:8080">
+        </div>
+
+        <div class="panel">
+            <h2>1 · Login PARENT — quem assiste</h2>
+            <label>E-mail</label>
+            <input id="parentEmail" value="parent@vantrack.com">
+            <label>Senha</label>
+            <input id="parentPassword" type="password" value="secret123">
+            <button id="btnLoginParent" class="primary">Entrar como PARENT</button>
+            <div class="status" style="margin: 12px 0 0">
+                <span class="dot" id="parentDot"></span><span id="parentStatus">sem token</span>
+            </div>
+            <label>Token PARENT (header do CONNECT)</label>
+            <input id="parentToken" placeholder="preenchido pelo login" spellcheck="false">
+        </div>
+
+        <div class="panel">
+            <h2>2 · Login DRIVER — quem envia</h2>
+            <label>E-mail</label>
+            <input id="driverEmail" value="john.driver@gmail.com">
+            <label>Senha</label>
+            <input id="driverPassword" type="password" value="secret123">
+            <button id="btnLoginDriver">Entrar como DRIVER</button>
+            <div class="status" style="margin: 12px 0 0">
+                <span class="dot" id="driverDot"></span><span id="driverStatus">sem token</span>
+            </div>
+            <label>Token DRIVER (header do POST /trackings)</label>
+            <input id="driverToken" placeholder="preenchido pelo login" spellcheck="false">
+        </div>
+
+        <div class="panel">
+            <h2>3 · Conexão WebSocket</h2>
+            <div class="status"><span class="dot" id="wsDot"></span><span id="wsStatus">desconectado</span></div>
+            <label>Trip ID</label>
+            <input id="tripId" placeholder="uuid da viagem">
+            <div class="row">
+                <button id="btnConnect">Conectar &amp; assinar</button>
+                <button id="btnDisconnect" class="danger" disabled>Desconectar</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>4 · Enviar localização</h2>
+            <div class="row">
+                <div>
+                    <label>Latitude</label>
+                    <input id="lat" value="-23.550520">
+                </div>
+                <div>
+                    <label>Longitude</label>
+                    <input id="lng" value="-46.633308">
+                </div>
+            </div>
+            <div class="row">
+                <button id="btnSend">Enviar 1 ponto</button>
+                <button id="btnSim">Simular rota</button>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="panel">
+            <h2>Log</h2>
+            <div id="log"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Trajeto recebido</h2>
+            <canvas id="map"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>Mensagens recebidas <span class="counter" id="count">0</span></h2>
+            <table>
+                <thead>
+                <tr><th>Recebido em</th><th>Latitude</th><th>Longitude</th><th>createdAt</th></tr>
+                </thead>
+                <tbody id="rows">
+                <tr><td class="empty" colspan="4">Nenhuma mensagem ainda.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const $ = id => document.getElementById(id);
+    let client = null;
+    let subscription = null;
+    let simTimer = null;
+    const points = [];
+
+    function log(msg, kind = '') {
+        const line = document.createElement('div');
+        if (kind) line.className = kind;
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        $('log').appendChild(line);
+        $('log').scrollTop = $('log').scrollHeight;
+    }
+
+    function setWs(state, text) {
+        $('wsDot').className = 'dot' + (state ? ' ' + state : '');
+        $('wsStatus').textContent = text;
+    }
+
+    const baseUrl = () => $('baseUrl').value.replace(/\/+$/, '');
+    const parentToken = () => $('parentToken').value.trim();
+    const driverToken = () => $('driverToken').value.trim();
+
+    // ---- 1 e 2. logins ------------------------------------------------------
+    const scopeOf = jwt =>
+        JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).scope;
+
+    async function login(role, {emailId, passwordId, tokenId, dotId, statusId}) {
+        try {
+            const res = await fetch(baseUrl() + '/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: $(emailId).value, password: $(passwordId).value})
+            });
+            const body = (await res.text()).trim();
+            if (!res.ok) throw new Error(`HTTP ${res.status} — ${body}`);
+
+            const scope = scopeOf(body);
+            $(tokenId).value = body;
+            $(dotId).className = 'dot on';
+            $(statusId).textContent = 'autenticado — scope: ' + scope;
+            log(`login ${role} ok, scope: ${scope}`, 'ok');
+
+            if (!scope.includes(role)) {
+                log(`atenção: esperava scope ${role}, veio "${scope}"`, 'err');
+            }
+        } catch (e) {
+            $(tokenId).value = '';
+            $(dotId).className = 'dot';
+            $(statusId).textContent = 'sem token';
+            log(`falha no login ${role}: ` + e.message, 'err');
+        }
+    }
+
+    $('btnLoginParent').onclick = () => login('PARENT', {
+        emailId: 'parentEmail', passwordId: 'parentPassword',
+        tokenId: 'parentToken', dotId: 'parentDot', statusId: 'parentStatus'
+    });
+
+    $('btnLoginDriver').onclick = () => login('DRIVER', {
+        emailId: 'driverEmail', passwordId: 'driverPassword',
+        tokenId: 'driverToken', dotId: 'driverDot', statusId: 'driverStatus'
+    });
+
+    // ---- 2. websocket -------------------------------------------------------
+    $('btnConnect').onclick = () => {
+        const tripId = $('tripId').value.trim();
+        if (!tripId) return log('informe o Trip ID antes de conectar', 'err');
+        if (!parentToken()) return log('faça login como PARENT antes de conectar', 'err');
+
+        setWs('wait', 'conectando...');
+        client = new StompJs.Client({
+            webSocketFactory: () => new SockJS(baseUrl() + '/ws'),
+            // o handshake HTTP do SockJS não carrega headers, então o token do
+            // PARENT vai como header nativo do frame STOMP CONNECT
+            connectHeaders: {Authorization: 'Bearer ' + parentToken()},
+            reconnectDelay: 5000,
+            debug: () => {}
+        });
+
+        client.onConnect = () => {
+            const topic = '/topic/trips/' + tripId;
+            subscription = client.subscribe(topic, frame => onLocation(frame.body));
+            setWs('on', 'conectado — ' + topic);
+            log('assinado em ' + topic, 'ok');
+            $('btnConnect').disabled = true;
+            $('btnDisconnect').disabled = false;
+        };
+
+        client.onStompError = f => {
+            log('erro STOMP: ' + f.headers['message'], 'err');
+            log('token rejeitado ou sem permissão no destino — o CONNECT foi recusado', 'err');
+        };
+        client.onWebSocketError = () => log('erro no WebSocket — o endpoint /ws está liberado no SecurityConfig?', 'err');
+        client.onWebSocketClose = () => setWs('', 'desconectado');
+
+        client.activate();
+    };
+
+    $('btnDisconnect').onclick = () => {
+        stopSim();
+        subscription?.unsubscribe();
+        client?.deactivate();
+        subscription = client = null;
+        setWs('', 'desconectado');
+        log('desconectado');
+        $('btnConnect').disabled = false;
+        $('btnDisconnect').disabled = true;
+    };
+
+    // ---- 3. envio de localizações ------------------------------------------
+    async function sendLocation(lat, lng) {
+        if (!driverToken()) return log('faça login como DRIVER antes de enviar', 'err');
+        const tripId = $('tripId').value.trim();
+        if (!tripId) return log('informe o Trip ID', 'err');
+
+        try {
+            const res = await fetch(baseUrl() + '/trackings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + driverToken()},
+                body: JSON.stringify({tripId, latitude: Number(lat), longitude: Number(lng)})
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status} — ${(await res.text()).trim()}`);
+            log(`POST /trackings 201 → ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`);
+        } catch (e) {
+            log('falha no envio: ' + e.message, 'err');
+        }
+    }
+
+    $('btnSend').onclick = () => sendLocation($('lat').value, $('lng').value);
+
+    $('btnSim').onclick = () => {
+        if (simTimer) return stopSim();
+        let lat = Number($('lat').value), lng = Number($('lng').value);
+        $('btnSim').textContent = 'Parar simulação';
+        simTimer = setInterval(() => {
+            lat += (Math.random() - 0.3) * 0.0012;
+            lng += (Math.random() - 0.3) * 0.0012;
+            $('lat').value = lat.toFixed(6);
+            $('lng').value = lng.toFixed(6);
+            sendLocation(lat, lng);
+        }, 2000);
+        log('simulação iniciada (1 ponto a cada 2s)');
+    };
+
+    function stopSim() {
+        if (!simTimer) return;
+        clearInterval(simTimer);
+        simTimer = null;
+        $('btnSim').textContent = 'Simular rota';
+        log('simulação parada');
+    }
+
+    // ---- recepção -----------------------------------------------------------
+    function onLocation(raw) {
+        let data;
+        try {
+            data = JSON.parse(raw);
+        } catch {
+            return log('payload não-JSON: ' + raw, 'err');
+        }
+
+        log('← recebido: ' + raw, 'in');
+        points.push(data);
+        $('count').textContent = points.length;
+
+        const tbody = $('rows');
+        if (points.length === 1) tbody.innerHTML = '';
+        const tr = document.createElement('tr');
+        [
+            new Date().toLocaleTimeString(),
+            data.latitude,
+            data.longitude,
+            Array.isArray(data.createdAt) ? data.createdAt.join(',') : (data.createdAt ?? '—')
+        ].forEach(v => {
+            const td = document.createElement('td');
+            td.textContent = v;
+            tr.appendChild(td);
+        });
+        tbody.prepend(tr);
+        draw();
+    }
+
+    // ---- trajeto ------------------------------------------------------------
+    function draw() {
+        const c = $('map');
+        const dpr = window.devicePixelRatio || 1;
+        c.width = c.clientWidth * dpr;
+        c.height = c.clientHeight * dpr;
+
+        const ctx = c.getContext('2d');
+        ctx.scale(dpr, dpr);
+        const w = c.clientWidth, h = c.clientHeight, pad = 24;
+        ctx.clearRect(0, 0, w, h);
+        if (!points.length) return;
+
+        const lats = points.map(p => Number(p.latitude));
+        const lngs = points.map(p => Number(p.longitude));
+        const spanLat = Math.max(...lats) - Math.min(...lats) || 0.001;
+        const spanLng = Math.max(...lngs) - Math.min(...lngs) || 0.001;
+        const x = lng => pad + (lng - Math.min(...lngs)) / spanLng * (w - 2 * pad);
+        const y = lat => h - pad - (lat - Math.min(...lats)) / spanLat * (h - 2 * pad);
+
+        ctx.strokeStyle = '#4da3ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        points.forEach((p, i) => {
+            const px = x(Number(p.longitude)), py = y(Number(p.latitude));
+            i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+        });
+        ctx.stroke();
+
+        points.forEach((p, i) => {
+            const last = i === points.length - 1;
+            ctx.fillStyle = last ? '#35c88b' : '#26456b';
+            ctx.beginPath();
+            ctx.arc(x(Number(p.longitude)), y(Number(p.latitude)), last ? 6 : 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    window.addEventListener('resize', draw);
+</script>
+</body>
+</html>

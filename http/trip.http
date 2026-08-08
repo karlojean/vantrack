@@ -17,6 +17,6 @@ Authorization: Bearer {{authTokenDriver}}
 
 ### Finish Trip
 
-PUT {{baseUrl}}/trips/cf088149-0ddc-483f-8f8c-f995c6c24f84/finish
+PUT {{baseUrl}}/trips/39c248df-902d-47de-910f-30c4b5b8af21/finish
 Content-Type: application/json
 Authorization: Bearer {{authTokenDriver}}
