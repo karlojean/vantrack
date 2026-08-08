@@ -1,9 +1,8 @@
 package com.vantrack.config;
 
+import com.vantrack.tracking.web.websocket.TripSubscriptionAuthorizationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -23,11 +22,11 @@ public class WebSocketSecurityConfig  {
 
     @Bean
     AuthorizationManager<Message<?>> messageAuthorizationManager(
-            MessageMatcherDelegatingAuthorizationManager.Builder messages) {
+            MessageMatcherDelegatingAuthorizationManager.Builder messages, TripSubscriptionAuthorizationManager tripSubscriptionAuthorizationManager) {
         return messages
                 .simpTypeMatchers(SimpMessageType.CONNECT, SimpMessageType.DISCONNECT,
                         SimpMessageType.HEARTBEAT, SimpMessageType.UNSUBSCRIBE).permitAll()
-                .simpSubscribeDestMatchers("/topic/trips/**").hasAuthority("SCOPE_PARENT")
+                .simpSubscribeDestMatchers("/topic/trips/**").access(tripSubscriptionAuthorizationManager)
                 .anyMessage().denyAll()
                 .build();
     }

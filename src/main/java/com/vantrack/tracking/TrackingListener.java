@@ -1,6 +1,6 @@
 package com.vantrack.tracking;
 
-import com.vantrack.tracking.web.TrackingNotifier;
+import com.vantrack.tracking.web.websocket.TrackingNotifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 

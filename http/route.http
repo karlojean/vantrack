@@ -4,23 +4,23 @@ Content-Type: application/json
 Authorization: Bearer {{authTokenDriver}}
 
 {
-  "name": "EE Jose Maria - Tarde",
-  "vanId": "1052b0fc-5314-4f8f-89ab-5b53bef7cf42"
+  "name": "EE Dom Pedro - Manha",
+  "vanId": "4b4691db-d8e8-4920-bc1e-9fcd0099a96b"
 }
 
 ### Find All Routes
 GET {{baseUrl}}/routes
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenDriver}}
 
 ### Add Parent
-POST {{baseUrl}}/routes/7495648e-a9e1-47cd-abde-96e66c220bfa/parent
+POST {{baseUrl}}/routes/43848ddd-f9ae-4222-bea6-da1bb0861aa2/parent
 Content-Type: application/json
 Authorization: Bearer {{authTokenDriver}}
 
 {
-  "parentId": "e90a3940-bb85-4f35-9827-6812da344af1",
-  "studentName": "Valeria Valentina"
+  "parentId": "de1ab52e-1bbb-494b-8886-5e715c7b8c03",
+  "studentName": "João Pedro"
 }
 
 ### Find Parents

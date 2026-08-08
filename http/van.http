@@ -4,8 +4,8 @@ Content-Type: application/json
 Authorization: Bearer {{authTokenDriver}}
 
 {
-  "driverId": "4034d14b-03ac-40e3-aba4-71950283e852",
-  "plate": "OPH1221"
+  "driverId": "7b3bd226-a601-4826-a911-ab09592dc873",
+  "plate": "PWY3A22"
 }
 
 ### Find All Vans

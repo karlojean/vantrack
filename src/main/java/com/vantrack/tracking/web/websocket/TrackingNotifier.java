@@ -1,4 +1,4 @@
-package com.vantrack.tracking.web;
+package com.vantrack.tracking.web.websocket;
 
 import com.vantrack.tracking.TripLocation;
 import com.vantrack.tracking.web.dto.TripLocationResponse;
