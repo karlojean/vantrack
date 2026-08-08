@@ -3,8 +3,10 @@ package com.vantrack.routes.web;
 import com.vantrack.routes.AddParentUseCase;
 import com.vantrack.routes.CreateRouteUseCase;
 import com.vantrack.routes.ListAllRoutesUseCase;
+import com.vantrack.routes.ListRouteParentsUseCase;
 import com.vantrack.routes.web.dto.AddParentRequest;
 import com.vantrack.routes.web.dto.CreateRouteRequest;
+import com.vantrack.routes.web.dto.ParentResponse;
 import com.vantrack.routes.web.dto.RouteResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,11 +24,13 @@ public class RouteController {
     private final CreateRouteUseCase createRouteUseCase;
     private final ListAllRoutesUseCase listAllRoutesUseCase;
     private final AddParentUseCase addParentUseCase;
+    private final ListRouteParentsUseCase listRouteParentsUseCase;
 
-    public RouteController(CreateRouteUseCase createRouteUseCase, ListAllRoutesUseCase listAllRoutesUseCase, AddParentUseCase addParentUseCase) {
+    public RouteController(CreateRouteUseCase createRouteUseCase, ListAllRoutesUseCase listAllRoutesUseCase, AddParentUseCase addParentUseCase, ListRouteParentsUseCase listRouteParentsUseCase) {
         this.createRouteUseCase = createRouteUseCase;
         this.listAllRoutesUseCase = listAllRoutesUseCase;
         this.addParentUseCase = addParentUseCase;
+        this.listRouteParentsUseCase = listRouteParentsUseCase;
     }
 
     @PostMapping
@@ -55,4 +59,13 @@ public class RouteController {
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
         addParentUseCase.execute(id, request, userId);
     }
+
+    @GetMapping("{id}/parent")
+    List<ParentResponse>  listRouteParents(@PathVariable UUID id,
+                                           @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
+        return listRouteParentsUseCase.execute(id, userId);
+    }
+
 }
