@@ -38,6 +38,9 @@ public class SecurityConfig {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    @Value("${app.cors.allowed-origins}")
+    private List<String> corsAllowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -45,8 +48,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        // TODO apenas para teste local do tracking via browser: o handshake
-                        // SockJS não envia o header Authorization. Remover/proteger antes de prod.
                         .requestMatchers("/ws/**", "/tracking-test.html").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -55,15 +56,12 @@ public class SecurityConfig {
                 .build();
     }
 
-    // TODO liberado para desenvolvimento (front local em qualquer porta).
-    // Trocar por setAllowedOrigins(List.of("https://app.vantrack.com")) antes de prod.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(corsAllowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

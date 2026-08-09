@@ -11,3 +11,7 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.springframework.security: TRACE
+
+app:
+  cors:
+    allowed-origins: "*"

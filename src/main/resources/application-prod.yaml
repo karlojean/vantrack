@@ -14,3 +14,7 @@ spring:
 logging:
   level:
     root: INFO
+
+app:
+  cors:
+    allowed-origins: "https://vantrack.com.br"
