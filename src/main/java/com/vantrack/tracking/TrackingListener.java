@@ -3,7 +3,8 @@ package com.vantrack.tracking;
 import com.vantrack.tracking.web.websocket.TrackingNotifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 
 @Component
@@ -15,9 +16,8 @@ public class TrackingListener {
         this.trackingNotifier = trackingNotifier;
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserRegistration(SendLocationEvent event) {
-        System.out.println(event.getTripLocation().getId() + "AA");
         trackingNotifier.notifyLocation(event.getTripLocation());
     }
 
