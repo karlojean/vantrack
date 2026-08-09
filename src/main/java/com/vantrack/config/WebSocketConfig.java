@@ -69,7 +69,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     Jwt jwt = jwtDecoder.decode(authorization.substring(7));
                     accessor.setUser(converter.convert(jwt));
                 } catch (JwtException e) {
-                    throw new MessageDeliveryException(message, "Token inválido: " + e.getMessage());
+                    throw new MessageDeliveryException(message, "Token inválido: ");
                 }
                 return message;
             }
