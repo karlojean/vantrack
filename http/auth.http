@@ -27,3 +27,18 @@ Content-Type: application/json
     client.global.set("authTokenDriver", token)
     console.log("Token do usuário driver gerado com sucesso!");
 %}
+
+### Parent Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "parent@vantrack.com",
+  "password": "secret123"
+}
+> {%
+    let token = response.body;
+
+    client.global.set("authTokenParent", token)
+    console.log("Token do usuário parent gerado com sucesso!");
+%}

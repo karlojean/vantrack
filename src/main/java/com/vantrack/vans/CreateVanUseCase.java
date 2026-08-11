@@ -49,7 +49,7 @@ public class CreateVanUseCase {
             );
         }
 
-        if (user.getId() != request.driverId()) {
+        if (!user.getId().equals(request.driverId())) {
             user = userRepository.findById(request.driverId())
                     .orElseThrow(() -> new BusinessRuleException(
                             "Erro ao buscar usuário",

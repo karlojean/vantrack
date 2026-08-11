@@ -15,3 +15,7 @@ logging:
     org.hibernate.SQL: WARN
     org.testcontainers: INFO
     com.github.dockerjava: WARN
+
+app:
+  cors:
+    allowed-origins: "*"

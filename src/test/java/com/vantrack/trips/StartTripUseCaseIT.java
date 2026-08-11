@@ -13,12 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.ResultActions;
 import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -300,6 +303,47 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.errors.longitude").exists());
 
         assertThat(tripRepository.count()).isZero();
+    }
+
+    @Test
+    @DisplayName("")
+    void shouldNotAllowStartTwoActiveTripsSimultaneously() throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        User driver = data.driver();
+        Route route = data.route(data.van(driver));
+
+        StartTripRequest request = new StartTripRequest(route.getId(), LATITUDE, LONGITUDE);
+
+        Future<ResultActions> future1 = executor.submit(() -> {
+            latch.await();
+            return mockMvc.perform(post("/trips/start")
+                    .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+        });
+
+        Future<ResultActions> future2 = executor.submit(() -> {
+            latch.await();
+            return mockMvc.perform(post("/trips/start")
+                    .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)));
+        });
+
+        latch.countDown();
+
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
+
+        int status1 = future1.get().andReturn().getResponse().getStatus();
+        int status2 = future2.get().andReturn().getResponse().getStatus();
+
+        System.out.println(status1 + " - " + status2);
+
+        boolean oneSuccessOneFail = (status1 == 201 && status2 == 409) || (status1 == 409 && status2 == 201);
+        assertTrue(oneSuccessOneFail, "Uma das requisições deveria ter falhado para evitar duas viagens ativas!");
     }
 
     private void givenCompletedTrip(Route route) {

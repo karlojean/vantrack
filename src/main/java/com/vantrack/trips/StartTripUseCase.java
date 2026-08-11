@@ -11,6 +11,7 @@ import com.vantrack.trips.web.dto.TripResponse;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import com.vantrack.users.UserRole;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,26 +44,23 @@ public class StartTripUseCase {
                         HttpStatus.UNAUTHORIZED
                 ));
 
-
         Route route = routeRepository.findById(request.routeId())
                 .orElseThrow(() -> new EntityNotFoundException("Rota"));
 
-        if(!user.getId().equals(route.getVan().getDriver().getId())) {
+        if (!user.getId().equals(route.getVan().getDriver().getId())) {
             throw new BusinessRuleException(
                     "Não foi possível iniciar viagem",
                     "Driver so pode iniciar viagem que pertence a ele.",
                     HttpStatus.FORBIDDEN);
         }
 
-        if(tripRepository.existsByRoute_IdAndStatus(route.getId(), TripStatus.ACTIVE)) {
+        if (tripRepository.existsByRoute_IdAndStatus(route.getId(), TripStatus.ACTIVE)) {
             throw new BusinessRuleException(
                     "Não foi possível iniciar viagem",
                     "Não é possível iniciar uma rota com outra em andamento",
                     HttpStatus.CONFLICT
             );
         }
-
-
 
         OffsetDateTime startedAt = OffsetDateTime.now();
 
@@ -71,7 +69,22 @@ public class StartTripUseCase {
         trip.setStartedAt(startedAt);
         trip.setStatus(TripStatus.ACTIVE);
 
-        Trip savedTrip = tripRepository.save(trip);
+        Trip savedTrip;
+
+        try {
+            savedTrip = tripRepository.saveAndFlush(trip);
+        } catch (DataIntegrityViolationException exception) {
+
+            if (isActiveTripConstraintViolation(exception)) {
+                throw new BusinessRuleException(
+                        "Não foi possível iniciar viagem",
+                        "Já existe uma viagem ativa para esta rota",
+                        HttpStatus.CONFLICT
+                );
+            }
+
+            throw exception;
+        }
 
         TripLocation firstLocation = new TripLocation();
         firstLocation.setTrip(savedTrip);
@@ -82,6 +95,15 @@ public class StartTripUseCase {
         tripLocationRepository.save(firstLocation);
 
         return TripResponse.fromEntity(savedTrip);
-}
+    }
+
+    private boolean isActiveTripConstraintViolation(
+            DataIntegrityViolationException exception
+    ) {
+        Throwable cause = exception.getMostSpecificCause();
+
+        return cause.getMessage() != null
+                && cause.getMessage().contains("idx_trip_active_by_route");
+    }
 
 }
