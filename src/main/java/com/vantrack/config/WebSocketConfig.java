@@ -1,5 +1,6 @@
 package com.vantrack.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -20,10 +21,17 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.util.List;
+import java.util.UUID;
+
 @Configuration
 @EnableWebSocketMessageBroker
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Value("${app.cors.allowed-origins}")
+    private List<String> corsAllowedOrigins;
+
 
     private final JwtDecoder jwtDecoder;
 
@@ -34,7 +42,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns(corsAllowedOrigins.toArray(String[]::new))
                 .withSockJS()
                 .setSessionCookieNeeded(false);
     }
@@ -62,15 +70,31 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                 String authorization = accessor.getFirstNativeHeader("Authorization");
                 if (authorization == null || !authorization.startsWith("Bearer ")) {
-                    throw new MessageDeliveryException(message, "Token ausente no CONNECT");
+                    throw new MessageDeliveryException(message, "Não autenticado");
+                }
+
+                Jwt jwt;
+
+                try {
+                    jwt = jwtDecoder.decode(authorization.substring(7));
+                } catch (JwtException e) {
+                    throw new MessageDeliveryException(message, "Não autenticado");
+                }
+
+                String userIdClaim = jwt.getClaimAsString("userId");
+
+                if (userIdClaim == null || userIdClaim.isBlank()) {
+                    throw new MessageDeliveryException(message, "Não autenticado");
                 }
 
                 try {
-                    Jwt jwt = jwtDecoder.decode(authorization.substring(7));
-                    accessor.setUser(converter.convert(jwt));
-                } catch (JwtException e) {
-                    throw new MessageDeliveryException(message, "Token inválido: ");
+                    UUID.fromString(userIdClaim);
+                } catch (IllegalArgumentException e) {
+                    throw new MessageDeliveryException(message, "Não autenticado");
                 }
+
+                accessor.setUser(converter.convert(jwt));
+
                 return message;
             }
         });

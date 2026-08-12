@@ -1,9 +1,6 @@
 package com.vantrack.tracking.web.websocket;
 
 import com.vantrack.tracking.authorization.TripAccessPolicy;
-import com.vantrack.tracking.UserRouteRepository;
-import com.vantrack.trips.TripRepository;
-import com.vantrack.users.UserRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -16,44 +13,83 @@ import org.springframework.security.messaging.access.intercept.MessageAuthorizat
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 @Component
 public class TripSubscriptionAuthorizationManager implements AuthorizationManager<MessageAuthorizationContext<?>> {
 
-    private final UserRepository userRepository;
-    private final TripRepository tripRepository;
-    private final UserRouteRepository userRouteRepository;
+
     private final TripAccessPolicy tripAccessPolicy;
 
-    public TripSubscriptionAuthorizationManager(UserRepository userRepository, TripRepository tripRepository, UserRouteRepository userRouteRepository, TripAccessPolicy tripAccessPolicy) {
-        this.userRepository = userRepository;
-        this.tripRepository = tripRepository;
-        this.userRouteRepository = userRouteRepository;
+    public TripSubscriptionAuthorizationManager(TripAccessPolicy tripAccessPolicy) {
+
         this.tripAccessPolicy = tripAccessPolicy;
     }
 
     @Override
     public @Nullable AuthorizationResult authorize(Supplier<? extends @Nullable Authentication> authentication, MessageAuthorizationContext<?> object) {
 
-        JwtAuthenticationToken auth = (JwtAuthenticationToken) authentication.get();
-        var jwt = auth.getToken();
+        Authentication auth = authentication.get();
 
-        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
+        if(auth == null) {
+            return new AuthorizationDecision(false);
+        }
+
+        if (!(auth instanceof JwtAuthenticationToken jwtAuth)
+                || !auth.isAuthenticated()) {
+            return new AuthorizationDecision(false);
+        }
+
+        String userIdClaim = jwtAuth.getToken().getClaimAsString("userId");
+
+        if (userIdClaim == null || userIdClaim.isBlank()) {
+            return new AuthorizationDecision(false);
+        }
+
+        UUID userId;
+
+        try {
+            userId = UUID.fromString(userIdClaim);
+        } catch (IllegalArgumentException e) {
+            return new AuthorizationDecision(false);
+        }
 
         Message<?> message = object.getMessage();
 
         StompHeaderAccessor accessor =
                 MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+        if(accessor == null) {
+            return new AuthorizationDecision(false);
+        }
+
         String destination = accessor.getDestination();
 
-        String tripIdValue =
-                destination.substring("/topic/trips/".length());
+        if (destination == null) {
+            return new AuthorizationDecision(false);
+        }
 
-        UUID tripId = UUID.fromString(tripIdValue);
+        String prefix = "/topic/trips/";
+
+        if(!destination.startsWith(prefix)) {
+            return new AuthorizationDecision(false);
+        }
+
+        String tripIdValue =
+                destination.substring(prefix.length());
+
+        if (tripIdValue.isBlank() || tripIdValue.contains("/")) {
+            return new AuthorizationDecision(false);
+        }
+
+        UUID tripId;
+
+        try {
+            tripId = UUID.fromString(tripIdValue);
+        } catch (IllegalArgumentException e) {
+            return new AuthorizationDecision(false);
+        }
 
         boolean canAccess = tripAccessPolicy.canAccess(userId, tripId);
 
