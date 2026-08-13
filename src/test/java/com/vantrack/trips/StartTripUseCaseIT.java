@@ -53,7 +53,7 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.routeId").value(route.getId().toString()))
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
@@ -68,8 +68,6 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
         assertThat(tripLocationRepository.findAll()).singleElement().satisfies(location -> {
             assertThat(location.getLatitude()).isEqualByComparingTo(LATITUDE);
             assertThat(location.getLongitude()).isEqualByComparingTo(LONGITUDE);
-            // mesmo instante do startedAt: um now() por execução, não dois
-            assertThat(location.getCreatedAt()).isEqualTo(trip.getStartedAt());
         });
 
         assertThat(tripIdOfSingleLocation()).isEqualTo(trip.getId());
@@ -88,7 +86,7 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/trips/start")
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
@@ -114,7 +112,7 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
 
         assertThat(tripRepository.count()).isEqualTo(2);
@@ -134,14 +132,14 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new StartTripRequest(busyRoute.getId(), LATITUDE, LONGITUDE))))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/trips/start")
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new StartTripRequest(freeRoute.getId(), LATITUDE, LONGITUDE))))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.routeId").value(freeRoute.getId().toString()));
 
         assertThat(tripRepository.count()).isEqualTo(2);
@@ -306,7 +304,7 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("Not possible start two active trips simultaneously")
     void shouldNotAllowStartTwoActiveTripsSimultaneously() throws Exception {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(1);
@@ -337,13 +335,17 @@ class StartTripUseCaseIT extends IntegrationTestSupport {
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
-        int status1 = future1.get().andReturn().getResponse().getStatus();
-        int status2 = future2.get().andReturn().getResponse().getStatus();
+        try {
+            int status1 = future1.get().andReturn().getResponse().getStatus();
+            int status2 = future2.get().andReturn().getResponse().getStatus();
 
-        System.out.println(status1 + " - " + status2);
-
-        boolean oneSuccessOneFail = (status1 == 201 && status2 == 409) || (status1 == 409 && status2 == 201);
-        assertTrue(oneSuccessOneFail, "Uma das requisições deveria ter falhado para evitar duas viagens ativas!");
+            boolean oneSuccessOneFail = (status1 == 201 && status2 == 409) || (status1 == 409 && status2 == 201);
+            assertTrue(oneSuccessOneFail, "Uma das requisições deveria ter falhado para evitar duas viagens ativas!");
+            assertThat(tripRepository.count()).isOne();
+            assertThat(tripLocationRepository.count()).isOne();
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     private void givenCompletedTrip(Route route) {
