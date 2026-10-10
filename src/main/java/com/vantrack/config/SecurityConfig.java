@@ -18,10 +18,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,6 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Configuration
@@ -37,6 +36,9 @@ import java.util.List;
 public class SecurityConfig {
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    @Value("${jwt.issuer}")
+    private String jwtIssuer;
 
     @Value("${app.cors.allowed-origins}")
     private List<String> corsAllowedOrigins;
@@ -70,14 +72,17 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        SecretKey secretKey = new SecretKeySpec(jwtSecret.getBytes(), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(secretKey).build();
+        OAuth2TokenValidator<Jwt> validator = JwtValidators.createDefaultWithIssuer(jwtIssuer);
+
+        NimbusJwtDecoder decoder =  NimbusJwtDecoder.withSecretKey(this.secretKey()).build();
+        decoder.setJwtValidator(validator);
+
+        return decoder;
     }
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        SecretKey secretKey = new SecretKeySpec(jwtSecret.getBytes(), "HmacSHA256");
-        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey));
+        return new NimbusJwtEncoder(new ImmutableSecret<>(this.secretKey()));
     }
 
     @Bean
@@ -94,5 +99,15 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService(UserRepository userRepository) {
         return username -> (UserDetails) userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    }
+
+    private SecretKey secretKey() {
+        byte[] jwtBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+
+        if(jwtBytes.length < 32) {
+            throw new IllegalStateException("Chave JWT não tem tamanho suficiente");
+        }
+
+        return new SecretKeySpec(jwtBytes, "HmacSHA256");
     }
 }

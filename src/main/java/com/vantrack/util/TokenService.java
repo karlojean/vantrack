@@ -1,5 +1,6 @@
 package com.vantrack.util;
 import com.vantrack.users.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -22,6 +23,9 @@ public class TokenService {
         this.encoder = encoder;
     }
 
+    @Value("${jwt.issuer}")
+    private String jwtIssuer;
+
     public String generateToken(Authentication authentication) {
         Instant now = Instant.now();
 
@@ -33,7 +37,7 @@ public class TokenService {
         User user = (User) authentication.getPrincipal();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("vantrack-api")
+                .issuer(jwtIssuer)
                 .issuedAt(now)
                 .expiresAt(now.plus(10, ChronoUnit.HOURS))
                 .subject(authentication.getName())
