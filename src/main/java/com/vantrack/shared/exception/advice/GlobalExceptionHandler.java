@@ -3,8 +3,10 @@ package com.vantrack.shared.exception.advice;
 import com.vantrack.shared.exception.BusinessRuleException;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -90,6 +92,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Você não possui permissão para acessar este recurso."
         );
         problemDetail.setTitle("Acesso Negado");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "Email e Senha incorretos"
+        );
+        problemDetail.setTitle("Falha na autenticação");
 
         return problemDetail;
     }

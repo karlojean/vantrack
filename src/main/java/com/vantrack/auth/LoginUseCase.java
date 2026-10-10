@@ -14,29 +14,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LoginUseCase {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
 
-    public LoginUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenService tokenService, AuthenticationManager authenticationManager) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    public LoginUseCase( TokenService tokenService, AuthenticationManager authenticationManager) {
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
     }
 
     public String execute(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email()).orElseThrow(
-                () -> new BusinessRuleException("Falha na autenticação",
-                "E-mail ou senha inválidos", HttpStatus.UNAUTHORIZED)
-        );
-
-        if(!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new BusinessRuleException("Falha na autenticação",
-                    "E-mail ou senha inválidos", HttpStatus.UNAUTHORIZED);
-        }
-
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
