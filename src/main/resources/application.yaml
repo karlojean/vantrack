@@ -14,6 +14,8 @@ spring:
     schemas: public
   jpa:
     open-in-view: false
+  config:
+    import: optional:file:.env[.properties]
 server:
   port: 8080
 
