@@ -4,6 +4,7 @@ import com.vantrack.shared.exception.BusinessRuleException;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.parsing.Problem;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -103,6 +104,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Email e Senha incorretos"
         );
         problemDetail.setTitle("Falha na autenticação");
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                "A operação conflita com dados já existentes. Verifique as informações e tente novamente."
+        );
+        problemDetail.setTitle("Conflito de dados");
 
         return problemDetail;
     }
