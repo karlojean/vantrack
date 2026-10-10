@@ -2,22 +2,24 @@ package com.vantrack.shared.exception.advice;
 
 import com.vantrack.shared.exception.BusinessRuleException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
+import org.jspecify.annotations.Nullable;
+import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BusinessRuleException.class)
     public ProblemDetail handleBusinessRole(BusinessRuleException ex) {
@@ -30,32 +32,32 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
+    @Override
+    protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         Map<String, String> errors = new LinkedHashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errors.merge(fieldError.getField(), fieldError.getDefaultMessage(), (atual, novo) -> atual + "; " + novo);
         }
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
+                ex.getStatusCode(),
                 "Um ou mais campos informados são inválidos."
         );
         problemDetail.setTitle("Dados inválidos");
         problemDetail.setProperty("errors", errors);
 
-        return problemDetail;
+        return ResponseEntity.of(problemDetail).build();
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ProblemDetail handleUnreadableBody(HttpMessageNotReadableException ex) {
+    @Override
+    protected @Nullable ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST,
                 "O corpo da requisição está ausente ou mal formatado."
         );
         problemDetail.setTitle("Requisição inválida");
 
-        return problemDetail;
+        return ResponseEntity.of(problemDetail).build();
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
