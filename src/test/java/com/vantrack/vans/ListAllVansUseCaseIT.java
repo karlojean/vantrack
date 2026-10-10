@@ -8,8 +8,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -100,18 +99,67 @@ class ListAllVansUseCaseIT extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("driver sees vans of other drivers too (no ownership scoping today)")
-    void shouldListVansOfEveryDriverWhenAuthenticatedAsDriver() throws Exception {
+    @DisplayName("DRIVER without filter, see only owned vans")
+    void shouldListVansThatBelongDriver() throws Exception {
         User driver = data.driver();
         User anotherDriver = data.driver();
+
         data.van(driver, "MIN1111");
         data.van(anotherDriver, "ALH2222");
 
         mockMvc.perform(get("/vans")
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].plate", containsInAnyOrder("MIN1111", "ALH2222")));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[*].plate", containsInAnyOrder("MIN1111")));
+    }
+
+    @Test
+    @DisplayName("Driver with userId of another driver, the parameter is ignored")
+    void shouldListVansIgnoringUserIdOfAnotherDriver() throws Exception {
+        User driver = data.driver();
+        User anotherDriver = data.driver();
+
+        data.van(anotherDriver, "ALH2222");
+
+        mockMvc.perform(get("/vans")
+                        .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                        .param("userId", String.valueOf(anotherDriver.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)))
+                .andExpect(jsonPath("$[*].plate", not(hasItem("ALH2222"))));
+
+    }
+
+    @Test
+    @DisplayName("Driver without vans receive an empty list ")
+    void shouldReturnEmptyListWhenDriveDoesNotHaveVan() throws Exception {
+        User driver = data.driver();
+
+
+        mockMvc.perform(get("/vans")
+                        .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    // Filtro de placa continua funcionando para DRIVER, sempre dentro do escopo dele
+
+    @Test
+    @DisplayName("plate filter continues work from the drive always within his scope")
+    void shouldListVansWithPlateFilterDriverOnly() throws Exception {
+        User driver = data.driver();
+        User anotherDriver = data.driver();
+
+        data.van(driver, "ALH1111");
+        data.van(anotherDriver, "ALH2222");
+
+        mockMvc.perform(get("/vans")
+                        .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                            .param("plate", "ALH"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[*].plate", contains("ALH1111")));
     }
 
     @Test

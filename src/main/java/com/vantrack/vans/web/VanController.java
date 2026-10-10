@@ -41,7 +41,12 @@ public class VanController {
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_DRIVER')")
-    public List<VanResponse> listAllVans(@ModelAttribute VanFilter filter) {
-        return listAllVansUseCase.execute(filter);
+    public List<VanResponse> listAllVans(
+            @ModelAttribute VanFilter filter,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
+
+        return listAllVansUseCase.execute(filter, userId);
     }
 }
