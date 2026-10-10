@@ -8,11 +8,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateUserRequest(
-        @NotEmpty(message = "O nome usuário não pode estar vazio")
+        @NotEmpty(message = "O nome do usuário não pode estar vazio")
+        @Size(max = 200, message = "O nome do usuário não pode ser maior que 200 caracteres")
         String name,
 
         @NotEmpty(message = "O e-mail do usuário não pode estar vazio")
         @Email(message = "O e-mail deve ser válido")
+        @Size(max = 254, message = "O e-mail não pode ser maior que 254 caracteres")
         String email,
 
         @NotEmpty(message = "A senha do usuário não pode estar vazia")
