@@ -158,4 +158,19 @@ class CreateVanUseCaseIT extends IntegrationTestSupport {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("Should normalize plate")
+    void shouldNormalizePlate() throws Exception {
+        User driver = data.driver();
+
+        CreateVanRequest request = new CreateVanRequest("abc1d23", driver.getId());
+
+        mockMvc.perform(post("/vans")
+                        .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.plate").value("ABC1D23"));
+    }
 }

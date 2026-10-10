@@ -4,6 +4,7 @@ import com.vantrack.auth.web.dto.LoginRequest;
 import com.vantrack.support.IntegrationTestSupport;
 import com.vantrack.support.TestDataFactory;
 import com.vantrack.users.User;
+import com.vantrack.users.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ class LoginUseCaseIT extends IntegrationTestSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     @DisplayName("valid credentials return a usable token")
@@ -97,5 +100,20 @@ class LoginUseCaseIT extends IntegrationTestSupport {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.password").exists());
+    }
+
+    @Test
+    @DisplayName("Should normalize Email for login")
+    void shouldNormalizeEmailForLogin() throws Exception {
+        User driver = data.driver();
+
+        String emailUpper = driver.getEmail().toUpperCase();
+
+        LoginRequest request = new LoginRequest(emailUpper, TestDataFactory.DEFAULT_PASSWORD);
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
     }
 }

@@ -1,6 +1,5 @@
 package com.vantrack.vans.web.dto;
 
-import com.vantrack.users.User;
 import com.vantrack.vans.Van;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +15,11 @@ public record CreateVanRequest(
         @NotNull(message = "O id do usuário é obrigatório")
         UUID driverId
 ) {
+    public CreateVanRequest {
+        if(plate != null) {
+            plate = plate.trim().toUpperCase();
+        }
+    }
 
     public Van toEntity() {
         Van van = new Van();

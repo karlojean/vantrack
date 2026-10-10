@@ -23,6 +23,12 @@ public record CreateUserRequest(
         UserRole role
 ) {
 
+    public CreateUserRequest {
+        if(email != null) {
+            email = email.trim().toLowerCase();
+        }
+    }
+
     public User toEntity() {
         User user  = new User();
         user.setName(name);

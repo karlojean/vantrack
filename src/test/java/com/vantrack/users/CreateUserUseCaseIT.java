@@ -216,4 +216,22 @@ class CreateUserUseCaseIT extends IntegrationTestSupport {
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("Should normalize email")
+    void shouldNormalizeEmail() throws Exception {
+        User admin = data.admin();
+
+        CreateUserRequest request = new CreateUserRequest("John", "JOHN@mail.com", "secret2121", UserRole.DRIVER);
+
+        mockMvc.perform(post("/users")
+                        .header(HttpHeaders.AUTHORIZATION, data.bearerFor(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.email").value("john@mail.com"));
+
+        assertThat(userRepository.existsByEmail("john@mail.com")).isTrue();
+    }
 }

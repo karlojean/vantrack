@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
-public record LoginRequest (
+public record LoginRequest(
 
         @Email
         @NotEmpty
@@ -15,4 +15,9 @@ public record LoginRequest (
         @Size(min = 8, max = 256)
         String password
 ) {
+    public LoginRequest {
+        if (email != null) {
+            email = email.trim().toLowerCase();
+        }
+    }
 }
