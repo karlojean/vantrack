@@ -13,7 +13,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
+import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
 import org.springframework.messaging.simp.stomp.*;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
@@ -44,6 +49,9 @@ public class TrackingFlowIT extends IntegrationTestSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SimpleBrokerMessageHandler brokerMessageHandler;
 
     private static final BigDecimal LATITUDE = new BigDecimal("-23.550520");
     private static final BigDecimal LONGITUDE = new BigDecimal("-46.633308");
@@ -106,6 +114,60 @@ public class TrackingFlowIT extends IntegrationTestSupport {
             stompClient.stop();
         }
     };
+
+    @Test
+    @DisplayName("Should deliver the very first location once subscription is confirmed")
+    void shouldDeliverFirstLocationAfterSubscriptionIsConfirmed() throws Exception {
+        User driver = data.driver();
+        User parent = data.parent();
+        Van van = data.van(driver);
+        Route route = data.route(van);
+
+        data.linkParent(parent, route);
+
+        Trip trip = data.trip(route);
+
+        URI url = new URI("ws://localhost:" + port + "/ws");
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient()))));
+
+        RecordingSessionHandler handler = new RecordingSessionHandler();
+        StompHeaders stompHeaders = new StompHeaders();
+        stompHeaders.set("Authorization", data.bearerFor(parent));
+
+        StompSession stompSession = stompClient.connectAsync(url, null, stompHeaders, handler).get(5, TimeUnit.SECONDS);
+
+        try {
+            assertThat(stompSession.isConnected()).isTrue();
+
+            CompletableFuture<byte[]> received = new CompletableFuture<>();
+
+            String topic = "/topic/trips/" + trip.getId();
+            stompSession.subscribe(topic, byteFrame(received));
+
+            awaitBrokerSubscription(topic, handler);
+
+            mockMvc.perform(post("/trackings")
+                            .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(bodyOf(new SendLocationRequest(trip.getId(), LATITUDE, LONGITUDE))))
+                    .andExpect(status().isCreated());
+
+            byte[] payload = received.get(5, TimeUnit.SECONDS);
+
+            assertThat(handler.failure).isNotDone();
+
+            String json = new String(payload, StandardCharsets.UTF_8);
+
+            assertThat(json)
+                    .contains(trip.getId().toString())
+                    .contains(LATITUDE.toPlainString())
+                    .contains(LONGITUDE.toPlainString());
+        } finally {
+            stompSession.disconnect();
+            stompClient.stop();
+        }
+    }
 
     @Test
     @DisplayName("Should notify subscribed parent when trip is finished")
@@ -222,6 +284,26 @@ public class TrackingFlowIT extends IntegrationTestSupport {
                 received.complete((byte[]) payload);
             }
         };
+    }
+
+    private void awaitBrokerSubscription(String topic, RecordingSessionHandler handler) throws InterruptedException {
+        SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
+        headers.setDestination(topic);
+        Message<byte[]> probe = MessageBuilder.createMessage(new byte[0], headers.getMessageHeaders());
+
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+
+        while (System.nanoTime() < deadline) {
+            if (handler.failure.isDone()) {
+                throw new IllegalStateException("Falha na sessão STOMP antes da inscrição", handler.failure.getNow(null));
+            }
+            if (!brokerMessageHandler.getSubscriptionRegistry().findSubscriptions(probe).isEmpty()) {
+                return;
+            }
+            Thread.sleep(10);
+        }
+
+        throw new IllegalStateException("Inscrição em " + topic + " não foi registrada no broker");
     }
 
     private String bodyOf(SendLocationRequest request) {

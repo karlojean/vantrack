@@ -4,6 +4,7 @@ import com.vantrack.routes.Route;
 import com.vantrack.routes.RouteRepository;
 import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.shared.exception.EntityNotFoundException;
+import com.vantrack.tracking.SendLocationEvent;
 import com.vantrack.tracking.TripLocation;
 import com.vantrack.tracking.TripLocationRepository;
 import com.vantrack.trips.web.dto.StartTripRequest;
@@ -11,6 +12,7 @@ import com.vantrack.trips.web.dto.TripResponse;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import com.vantrack.users.UserRole;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,12 +28,14 @@ public class StartTripUseCase {
     private final RouteRepository routeRepository;
     private final TripLocationRepository tripLocationRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public StartTripUseCase(TripRepository tripRepository, RouteRepository routeRepository, TripLocationRepository tripLocationRepository, UserRepository userRepository) {
+    public StartTripUseCase(TripRepository tripRepository, RouteRepository routeRepository, TripLocationRepository tripLocationRepository, UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.tripRepository = tripRepository;
         this.routeRepository = routeRepository;
         this.tripLocationRepository = tripLocationRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -93,6 +97,8 @@ public class StartTripUseCase {
         firstLocation.setCreatedAt(startedAt);
 
         tripLocationRepository.save(firstLocation);
+
+        eventPublisher.publishEvent(new SendLocationEvent(firstLocation));
 
         return TripResponse.fromEntity(savedTrip);
     }
