@@ -31,6 +31,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -105,6 +106,89 @@ public class TrackingFlowIT extends IntegrationTestSupport {
             stompClient.stop();
         }
     };
+
+    @Test
+    @DisplayName("Should notify subscribed parent when trip is finished")
+    void shouldNotifySubscribedParentWhenTripIsFinished() throws Exception {
+        User driver = data.driver();
+        User parent = data.parent();
+        Van van = data.van(driver);
+        Route route = data.route(van);
+
+        data.linkParent(parent, route);
+
+        Trip trip = data.trip(route);
+
+        URI url = new URI("ws://localhost:" + port + "/ws");
+
+        WebSocketStompClient stompClient = new WebSocketStompClient(new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient()))));
+
+        RecordingSessionHandler handler = new RecordingSessionHandler();
+        StompHeaders stompHeaders = new StompHeaders();
+        stompHeaders.set("Authorization", data.bearerFor(parent));
+
+        StompSession stompSession = stompClient.connectAsync(url, null, stompHeaders, handler).get(5, TimeUnit.SECONDS);
+
+        try {
+            assertThat(stompSession.isConnected()).isTrue();
+
+            CompletableFuture<byte[]> locationReceived = new CompletableFuture<>();
+            CompletableFuture<byte[]> finishReceived = new CompletableFuture<>();
+
+            stompSession.subscribe("/topic/trips/" + trip.getId(), new StompFrameHandler() {
+                @Override
+                public Type getPayloadType(StompHeaders headers) {
+                    return byte[].class;
+                }
+
+                @Override
+                public void handleFrame(StompHeaders headers, Object payload) {
+                    byte[] body = (byte[]) payload;
+                    String json = new String(body, StandardCharsets.UTF_8);
+
+                    if (json.contains("TRIP_FINISHED")) {
+                        finishReceived.complete(body);
+                    } else {
+                        locationReceived.complete(body);
+                    }
+                }
+            });
+
+            for (int attempt = 0; attempt < 25 && !locationReceived.isDone() && !handler.failure.isDone(); attempt++) {
+                mockMvc.perform(post("/trackings")
+                                .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(bodyOf(new SendLocationRequest(trip.getId(), LATITUDE, LONGITUDE))))
+                        .andExpect(status().isCreated());
+
+                try {
+                    CompletableFuture.anyOf(locationReceived, handler.failure).get(200, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException ignored) {
+                    // Ignore Timeout
+                }
+            }
+
+            assertThat(handler.failure).isNotDone();
+            assertThat(locationReceived).isDone();
+
+            mockMvc.perform(put("/trips/{id}/finish", trip.getId())
+                            .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver)))
+                    .andExpect(status().isOk());
+
+            byte[] payload = finishReceived.get(5, TimeUnit.SECONDS);
+
+            String json = new String(payload, StandardCharsets.UTF_8);
+
+            assertThat(handler.failure).isNotDone();
+            assertThat(json)
+                    .contains("\"type\":\"TRIP_FINISHED\"")
+                    .contains(trip.getId().toString())
+                    .contains("endedAt");
+        } finally {
+            stompSession.disconnect();
+            stompClient.stop();
+        }
+    }
 
     private static final class RecordingSessionHandler extends StompSessionHandlerAdapter {
         private final CompletableFuture<Throwable> failure = new CompletableFuture<>();

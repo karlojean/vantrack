@@ -1,7 +1,7 @@
 package com.vantrack.tracking;
 
 import com.vantrack.tracking.web.websocket.TrackingNotifier;
-import org.springframework.context.event.EventListener;
+import com.vantrack.trips.TripFinishedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -21,4 +21,8 @@ public class TrackingListener {
         trackingNotifier.notifyLocation(event.getTripLocation());
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleFinishTrip(TripFinishedEvent event) {
+        trackingNotifier.notifyFinishTrip(event.getTrip());
+    }
 }

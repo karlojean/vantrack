@@ -5,6 +5,7 @@ import com.vantrack.shared.exception.EntityNotFoundException;
 import com.vantrack.trips.web.dto.TripResponse;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,12 @@ public class FinishTripUseCase {
 
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public FinishTripUseCase(UserRepository userRepository, TripRepository tripRepository) {
+    public FinishTripUseCase(UserRepository userRepository, TripRepository tripRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.tripRepository = tripRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -56,7 +59,11 @@ public class FinishTripUseCase {
         OffsetDateTime endedAt = OffsetDateTime.now();
         trip.setEndedAt(endedAt);
 
-        return TripResponse.fromEntity(tripRepository.save(trip));
+        tripRepository.save(trip);
+
+        eventPublisher.publishEvent(new TripFinishedEvent(trip));
+
+        return TripResponse.fromEntity(trip);
     }
 
 }
