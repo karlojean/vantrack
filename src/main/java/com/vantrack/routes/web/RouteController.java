@@ -54,7 +54,7 @@ public class RouteController {
     void addParent(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody AddParentRequest request
+            @RequestBody @Valid AddParentRequest request
     ) {
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
         addParentUseCase.execute(id, request, userId);
