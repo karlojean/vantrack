@@ -9,6 +9,7 @@ import com.vantrack.routes.web.dto.CreateRouteRequest;
 import com.vantrack.routes.web.dto.ParentResponse;
 import com.vantrack.routes.web.dto.RouteResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ public class RouteController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     RouteResponse createRoute(
             @RequestBody @Valid CreateRouteRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -51,6 +53,7 @@ public class RouteController {
     }
 
     @PostMapping("{id}/parent")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     void addParent(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt,

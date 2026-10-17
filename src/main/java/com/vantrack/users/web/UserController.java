@@ -3,11 +3,11 @@ package com.vantrack.users.web;
 import com.vantrack.users.CreateUserUseCase;
 import com.vantrack.users.FindUserByIdUseCase;
 import com.vantrack.users.ListAllUsersUseCase;
-import com.vantrack.users.User;
 import com.vantrack.users.web.dto.CreateUserRequest;
 import com.vantrack.users.web.dto.UserFilter;
 import com.vantrack.users.web.dto.UserResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,6 +33,7 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
     UserResponse createUser(@RequestBody @Valid CreateUserRequest request) {
         return createUserUseCase.execute(request);
     }

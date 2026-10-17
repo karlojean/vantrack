@@ -17,9 +17,9 @@ public record StartTripRequest(
         @DecimalMax(value = "90.0", message = "Latitude deve ser no máximo 90.0")
         BigDecimal latitude,
 
-        @NotNull(message = "Longitude e obrigatório")
+        @NotNull(message = "Longitude é obrigatório")
         @DecimalMin(value = "-180.0", message = "Longitude deve ser no mínimo -180.0")
-        @DecimalMax(value = "180.0", message = "Longitude mdeve ser no máximo 180.0")
+        @DecimalMax(value = "180.0", message = "Longitude deve ser no máximo 180.0")
         BigDecimal longitude
 ) {
 }

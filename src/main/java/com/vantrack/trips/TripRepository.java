@@ -1,13 +1,10 @@
 package com.vantrack.trips;
 
-import com.vantrack.routes.Route;
-import com.vantrack.routes.UserRoute;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public interface TripRepository extends JpaRepository<Trip, UUID> {

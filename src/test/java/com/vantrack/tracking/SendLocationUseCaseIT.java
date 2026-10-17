@@ -200,7 +200,7 @@ class SendLocationUseCaseIT extends IntegrationTestSupport {
                         .content(bodyOf(new SendLocationRequest(trip.getId(), LATITUDE, LONGITUDE))))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Não foi possível salvar localização"))
-                .andExpect(jsonPath("$.detail").value("Não e possível salvar localização em viagens finalizadas."));
+                .andExpect(jsonPath("$.detail").value("Não é possível salvar localização em viagens finalizadas."));
 
         assertThat(tripLocationRepository.count()).isZero();
     }

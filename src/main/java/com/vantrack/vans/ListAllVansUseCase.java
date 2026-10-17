@@ -1,6 +1,7 @@
 package com.vantrack.vans;
 
 import com.vantrack.shared.exception.BusinessRuleException;
+import com.vantrack.shared.persistence.LikeEscaper;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import com.vantrack.users.UserRole;
@@ -35,7 +36,7 @@ public class ListAllVansUseCase {
         Specification<Van> spec = Specification.where((root, query, cb) -> cb.conjunction());
 
         if(filter.plate() != null) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("plate")), "%" + filter.plate().toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("plate")), LikeEscaper.containing(filter.plate().toLowerCase()), LikeEscaper.ESCAPE_CHAR));
         }
 
         UUID filterUserId = user.getRole() == UserRole.DRIVER ? user.getId() : filter.userId();

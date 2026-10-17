@@ -2,7 +2,6 @@ package com.vantrack.routes;
 
 import com.vantrack.routes.web.dto.AddParentRequest;
 import com.vantrack.support.IntegrationTestSupport;
-import com.vantrack.tracking.UserRouteRepository;
 import com.vantrack.users.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

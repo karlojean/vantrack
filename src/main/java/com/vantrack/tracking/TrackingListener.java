@@ -17,8 +17,8 @@ public class TrackingListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleUserRegistration(SendLocationEvent event) {
-        trackingNotifier.notifyLocation(event.getTripLocation());
+    public void onLocationSent(SendLocationEvent event) {
+        trackingNotifier.notifyLocation(event.tripLocation());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

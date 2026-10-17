@@ -44,7 +44,7 @@ public class CreateVanUseCase {
         if (user.getRole() != UserRole.ADMIN && isCreatingForAnotherUser) {
             throw new BusinessRuleException(
                     "Sem permissão",
-                    "O usuário não tem permissão para criar van para outro usuári",
+                    "O usuário não tem permissão para criar van para outro usuário",
                     HttpStatus.FORBIDDEN
             );
         }
@@ -60,7 +60,7 @@ public class CreateVanUseCase {
 
         if(user.getRole() != UserRole.DRIVER) {
             throw new BusinessRuleException(
-                    "Erro ao criar usuário",
+                    "Erro ao criar van",
                     "Não é possível cadastrar veículos para usuários sem perfil de motorista",
                     HttpStatus.UNPROCESSABLE_CONTENT
             );

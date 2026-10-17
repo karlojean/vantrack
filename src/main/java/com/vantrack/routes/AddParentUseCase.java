@@ -50,8 +50,8 @@ public class AddParentUseCase {
         if(!parent.getRole().equals(UserRole.PARENT)) {
             throw new BusinessRuleException(
                     "Não foi possível salvar pai",
-                    "Não e possível salvar usuários como pai que não pertence a role PARENT.",
-                    HttpStatus.FORBIDDEN);
+                    "Não é possível salvar usuários como pai que não pertence a role PARENT.",
+                    HttpStatus.UNPROCESSABLE_CONTENT);
         }
 
         UserRoute userRoute = new UserRoute();

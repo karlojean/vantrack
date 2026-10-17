@@ -159,7 +159,7 @@ class FinishTripUseCaseIT extends IntegrationTestSupport {
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(driver)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Não foi possível finalizar viagem"))
-                .andExpect(jsonPath("$.detail").value("Não e possível finalizar viagem completas."));
+                .andExpect(jsonPath("$.detail").value("Não é possível finalizar viagem completas."));
 
         // o endedAt da primeira finalização não pode ser sobrescrito
         assertThat(tripRepository.findById(trip.getId()).orElseThrow().getEndedAt())

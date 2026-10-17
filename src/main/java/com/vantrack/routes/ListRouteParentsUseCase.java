@@ -39,14 +39,11 @@ public class ListRouteParentsUseCase {
         UUID driverId = route.getVan().getDriver().getId();
         if(!driverId.equals(userId) && !user.getRole().equals(UserRole.ADMIN)) {
             throw new BusinessRuleException(
-                    "Não foi buscar pais",
+                    "Não foi possível buscar pais",
                     "Driver so pode buscar pais em rotas que pertence a ele.",
                     HttpStatus.FORBIDDEN);
         }
 
         return route.getUserRoutes().stream().map(ParentResponse::fromEntity).toList();
-
-
-    };
-
+    }
 }

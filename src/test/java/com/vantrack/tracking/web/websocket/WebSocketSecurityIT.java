@@ -4,7 +4,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.vantrack.routes.Route;
 import com.vantrack.routes.UserRoute;
 import com.vantrack.support.IntegrationTestSupport;
-import com.vantrack.tracking.UserRouteRepository;
+import com.vantrack.routes.UserRouteRepository;
 import com.vantrack.trips.Trip;
 import com.vantrack.trips.TripRepository;
 import com.vantrack.trips.TripStatus;

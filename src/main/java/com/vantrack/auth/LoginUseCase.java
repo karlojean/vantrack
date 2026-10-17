@@ -1,6 +1,7 @@
 package com.vantrack.auth;
 
 import com.vantrack.auth.web.dto.LoginRequest;
+import com.vantrack.auth.web.dto.LoginResponse;
 import com.vantrack.shared.exception.BusinessRuleException;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
@@ -22,11 +23,13 @@ public class LoginUseCase {
         this.authenticationManager = authenticationManager;
     }
 
-    public String execute(LoginRequest request) {
+    public LoginResponse execute(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
-        return tokenService.generateToken(authentication);
+        String token = tokenService.generateToken(authentication);;
+
+        return new LoginResponse(token);
     }
 }

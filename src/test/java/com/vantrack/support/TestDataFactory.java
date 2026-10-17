@@ -3,7 +3,7 @@ package com.vantrack.support;
 import com.vantrack.routes.Route;
 import com.vantrack.routes.RouteRepository;
 import com.vantrack.routes.UserRoute;
-import com.vantrack.tracking.UserRouteRepository;
+import com.vantrack.routes.UserRouteRepository;
 import com.vantrack.trips.Trip;
 import com.vantrack.trips.TripRepository;
 import com.vantrack.trips.TripStatus;

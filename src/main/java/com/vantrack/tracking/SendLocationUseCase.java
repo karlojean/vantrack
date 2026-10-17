@@ -55,7 +55,7 @@ public class SendLocationUseCase {
         if(trip.getStatus().equals(TripStatus.COMPLETED)) {
             throw new BusinessRuleException(
                     "Não foi possível salvar localização",
-                    "Não e possível salvar localização em viagens finalizadas.",
+                    "Não é possível salvar localização em viagens finalizadas.",
                     HttpStatus.CONFLICT);
         }
 

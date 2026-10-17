@@ -1,6 +1,5 @@
 package com.vantrack.vans.web.dto;
 
-import com.vantrack.users.UserRole;
 import com.vantrack.vans.Van;
 
 import java.util.UUID;

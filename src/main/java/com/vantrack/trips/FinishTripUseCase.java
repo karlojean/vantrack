@@ -51,7 +51,7 @@ public class FinishTripUseCase {
         if(trip.getStatus().equals(TripStatus.COMPLETED)) {
             throw new BusinessRuleException(
                     "Não foi possível finalizar viagem",
-                    "Não e possível finalizar viagem completas.",
+                    "Não é possível finalizar viagem completas.",
                     HttpStatus.CONFLICT);
         }
 

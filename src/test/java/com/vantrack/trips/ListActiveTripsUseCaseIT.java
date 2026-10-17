@@ -3,7 +3,7 @@ package com.vantrack.trips;
 import com.vantrack.routes.Route;
 import com.vantrack.routes.UserRoute;
 import com.vantrack.support.IntegrationTestSupport;
-import com.vantrack.tracking.UserRouteRepository;
+import com.vantrack.routes.UserRouteRepository;
 import com.vantrack.users.User;
 import com.vantrack.users.UserRepository;
 import org.junit.jupiter.api.DisplayName;

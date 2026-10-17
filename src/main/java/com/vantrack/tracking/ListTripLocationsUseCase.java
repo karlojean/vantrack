@@ -40,7 +40,6 @@ public class ListTripLocationsUseCase {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new EntityNotFoundException("Viagem"));
 
-
         if (!tripAccessPolicy.canViewHistory(userId, tripId)) {
             throw new BusinessRuleException(
                     "Não foi possível buscar as localizações",
@@ -52,5 +51,4 @@ public class ListTripLocationsUseCase {
 
         return locations.stream().map(TripLocationResponse::fromEntity).toList();
     }
-
 }

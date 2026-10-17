@@ -2,6 +2,7 @@ package com.vantrack.auth.web;
 
 import com.vantrack.auth.LoginUseCase;
 import com.vantrack.auth.web.dto.LoginRequest;
+import com.vantrack.auth.web.dto.LoginResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,10 +20,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody @Valid LoginRequest request) {
+    public LoginResponse login(@RequestBody @Valid LoginRequest request) {
         return loginUseCase.execute(request);
     }
-
-
-
 }

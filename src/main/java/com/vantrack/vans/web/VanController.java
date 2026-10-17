@@ -6,6 +6,7 @@ import com.vantrack.vans.web.dto.CreateVanRequest;
 import com.vantrack.vans.web.dto.VanFilter;
 import com.vantrack.vans.web.dto.VanResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -30,6 +31,7 @@ public class VanController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_DRIVER')")
+    @ResponseStatus(HttpStatus.CREATED)
     public VanResponse createVan(
             @RequestBody @Valid CreateVanRequest request,
             @AuthenticationPrincipal Jwt jwt

@@ -1,6 +1,6 @@
 package com.vantrack.tracking.authorization;
 
-import com.vantrack.tracking.UserRouteRepository;
+import com.vantrack.routes.UserRouteRepository;
 import com.vantrack.trips.Trip;
 import com.vantrack.trips.TripRepository;
 import com.vantrack.trips.TripStatus;

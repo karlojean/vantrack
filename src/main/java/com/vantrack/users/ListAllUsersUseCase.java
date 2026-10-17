@@ -1,5 +1,6 @@
 package com.vantrack.users;
 
+import com.vantrack.shared.persistence.LikeEscaper;
 import com.vantrack.users.web.dto.UserFilter;
 import com.vantrack.users.web.dto.UserResponse;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,7 +22,7 @@ public class ListAllUsersUseCase {
         Specification<User> spec = Specification.where((root, query, cb) -> cb.conjunction());
 
         if(filter.name() != null) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + filter.name().toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), LikeEscaper.containing(filter.name().toLowerCase()), LikeEscaper.ESCAPE_CHAR));
         }
 
         if(filter.role() != null) {

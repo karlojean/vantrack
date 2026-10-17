@@ -3,7 +3,6 @@ package com.vantrack.trips.web;
 import com.vantrack.trips.FinishTripUseCase;
 import com.vantrack.trips.ListActiveTripsUseCase;
 import com.vantrack.trips.StartTripUseCase;
-import com.vantrack.trips.Trip;
 import com.vantrack.trips.web.dto.StartTripRequest;
 import com.vantrack.trips.web.dto.TripResponse;
 import jakarta.validation.Valid;
@@ -41,7 +40,6 @@ public class TripController {
         return finishTripUseCase.execute(id, userId);
     }
 
-
     @PostMapping("/start")
     @PreAuthorize("hasAuthority('SCOPE_DRIVER')")
     @ResponseStatus(HttpStatus.CREATED)
@@ -62,5 +60,4 @@ public class TripController {
 
         return listActiveTripsUseCase.execute(userId);
     }
-
 }

@@ -1,7 +1,5 @@
-package com.vantrack.tracking;
+package com.vantrack.routes;
 
-import com.vantrack.routes.Route;
-import com.vantrack.routes.UserRoute;
 import com.vantrack.users.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

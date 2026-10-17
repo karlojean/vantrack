@@ -29,7 +29,7 @@ public class TrackingController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('SCOPE_DRIVER')")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     void sendLocation(
             @RequestBody @Valid SendLocationRequest request,
             @AuthenticationPrincipal Jwt jwt
