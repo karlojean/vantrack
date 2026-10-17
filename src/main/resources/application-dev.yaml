@@ -13,5 +13,8 @@ logging:
     org.springframework.security: TRACE
 
 app:
+  seed-admin:
+    email: "admin@vantrack.test"
+    password: "admin123"
   cors:
     allowed-origins: "*"

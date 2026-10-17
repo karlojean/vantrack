@@ -2,7 +2,7 @@ spring:
   application:
     name: vantrack
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE}
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   jackson:
     date-format: yyyy-MM-dd
     time-zone: America/Sao_Paulo
