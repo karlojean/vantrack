@@ -91,7 +91,7 @@ public class TripSubscriptionAuthorizationManager implements AuthorizationManage
             return new AuthorizationDecision(false);
         }
 
-        boolean canAccess = tripAccessPolicy.canAccess(userId, tripId);
+        boolean canAccess = tripAccessPolicy.canSubscribe(userId, tripId);
 
         return new AuthorizationDecision(canAccess);
     }

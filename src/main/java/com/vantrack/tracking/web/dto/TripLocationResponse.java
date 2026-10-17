@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record TripLocationResponse(
+        UUID id,
         UUID tripId,
         BigDecimal latitude,
         BigDecimal longitude,
@@ -14,6 +15,7 @@ public record TripLocationResponse(
 ) {
     public static TripLocationResponse fromEntity(TripLocation location) {
         return new TripLocationResponse(
+                location.getId(),
                 location.getTrip().getId(),
                 location.getLatitude(),
                 location.getLongitude(),

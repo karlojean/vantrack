@@ -25,33 +25,55 @@ public class TripAccessPolicy {
         this.userRouteRepository = userRouteRepository;
     }
 
-    public boolean canAccess(UUID userId, UUID tripId){
+    public boolean canViewHistory(UUID userId, UUID tripId) {
         User user = userRepository.findById(userId)
                 .orElse(null);
 
+        Trip trip = tripRepository.findById(tripId).orElse(null);
+
+        List<UserRole> rolesCanAccess = List.of(UserRole.PARENT, UserRole.ADMIN, UserRole.DRIVER);
+
+        if(!isEligible(rolesCanAccess, user, trip)) return false;
+
+        return isLinkedToTrip(user, trip);
+    }
+
+    public boolean canSubscribe(UUID userId, UUID tripId){
+        User user = userRepository.findById(userId)
+                .orElse(null);
+
+        Trip trip = tripRepository.findById(tripId).orElse(null);
+
+        List<UserRole> rolesCanAccess = List.of(UserRole.PARENT, UserRole.ADMIN);
+
+        if(!isEligible(rolesCanAccess, user, trip)) return false;
+
+        if(trip.getStatus() == TripStatus.COMPLETED) return false;
+
+        return isLinkedToTrip(user, trip);
+    }
+
+    private boolean isEligible(List<UserRole> rolesCanAccess, User user, Trip trip) {
         if(user == null) {
             return false;
         }
-
-        List<UserRole> rolesCanAccess = List.of(UserRole.PARENT, UserRole.ADMIN);
 
         if(!rolesCanAccess.contains(user.getRole())) {
             return false;
         }
 
-        Trip trip = tripRepository.findById(tripId).orElse(null);
-
         if(trip == null) {
             return false;
         }
 
-        if(trip.getStatus().equals(TripStatus.COMPLETED)) {
-            return false;
-        }
+        return true;
+    }
 
+    private boolean isLinkedToTrip(User user, Trip trip) {
         boolean userIsParentInRoute = userRouteRepository.existsByRouteAndParent(trip.getRoute(), user);
+        boolean userIsDriver = tripRepository.existsByIdAndRouteVanDriverId(trip.getId(), user.getId());
 
-        return userIsParentInRoute || user.getRole().equals(UserRole.ADMIN);
+        return userIsDriver || userIsParentInRoute || user.getRole().equals(UserRole.ADMIN);
     }
 
 }

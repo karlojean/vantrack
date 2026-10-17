@@ -27,4 +27,6 @@ public interface TripRepository extends JpaRepository<Trip, UUID> {
     );
 
     List<Trip> findAllByStatus(TripStatus status);
+
+    boolean existsByIdAndRouteVanDriverId(UUID id, UUID driverId);
 }
