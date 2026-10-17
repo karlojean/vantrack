@@ -64,16 +64,13 @@ class ListAllRoutesUseCaseIT extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("parent gets an empty list since they own no van")
-    void shouldReturnEmptyListWhenAuthenticatedAsParent() throws Exception {
+    @DisplayName("parent cannot list routes")
+    void shouldRejectWhenAuthenticatedAsParent() throws Exception {
         User parent = data.parent();
-        User driver = data.driver();
-        data.route(data.van(driver, "AAA1111"), "Rota A");
 
         mockMvc.perform(get("/routes")
                         .header(HttpHeaders.AUTHORIZATION, data.bearerFor(parent)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(status().isForbidden());
     }
 
     @Test

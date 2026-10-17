@@ -27,3 +27,8 @@ Authorization: Bearer {{authTokenDriver}}
 GET {{baseUrl}}/routes/7495648e-a9e1-47cd-abde-96e66c220bfa/parent
 Content-Type: application/json
 Authorization: Bearer {{authTokenDriver}}
+
+### Find My Routes
+GET {{baseUrl}}/routes/me
+Content-Type: application/json
+Authorization: Bearer {{authTokenParent}}

@@ -12,4 +12,7 @@ public interface RouteRepository extends JpaRepository<Route, UUID> {
 
     @EntityGraph(attributePaths = {"van", "van.driver"})
     List<Route> findAll();
+
+    @EntityGraph(attributePaths = {"van", "van.driver"})
+    List<Route> findAllByUserRoutes_Parent_Id(UUID userId);
 }

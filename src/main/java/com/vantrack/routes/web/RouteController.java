@@ -1,15 +1,13 @@
 package com.vantrack.routes.web;
 
-import com.vantrack.routes.AddParentUseCase;
-import com.vantrack.routes.CreateRouteUseCase;
-import com.vantrack.routes.ListAllRoutesUseCase;
-import com.vantrack.routes.ListRouteParentsUseCase;
+import com.vantrack.routes.*;
 import com.vantrack.routes.web.dto.AddParentRequest;
 import com.vantrack.routes.web.dto.CreateRouteRequest;
 import com.vantrack.routes.web.dto.ParentResponse;
 import com.vantrack.routes.web.dto.RouteResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +24,14 @@ public class RouteController {
     private final ListAllRoutesUseCase listAllRoutesUseCase;
     private final AddParentUseCase addParentUseCase;
     private final ListRouteParentsUseCase listRouteParentsUseCase;
+    private final ListParentRoutesUseCase listParentRoutesUseCase;
 
-    public RouteController(CreateRouteUseCase createRouteUseCase, ListAllRoutesUseCase listAllRoutesUseCase, AddParentUseCase addParentUseCase, ListRouteParentsUseCase listRouteParentsUseCase) {
+    public RouteController(CreateRouteUseCase createRouteUseCase, ListAllRoutesUseCase listAllRoutesUseCase, AddParentUseCase addParentUseCase, ListRouteParentsUseCase listRouteParentsUseCase, ListParentRoutesUseCase listParentRoutesUseCase) {
         this.createRouteUseCase = createRouteUseCase;
         this.listAllRoutesUseCase = listAllRoutesUseCase;
         this.addParentUseCase = addParentUseCase;
         this.listRouteParentsUseCase = listRouteParentsUseCase;
+        this.listParentRoutesUseCase = listParentRoutesUseCase;
     }
 
     @PostMapping
@@ -45,6 +45,7 @@ public class RouteController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_DRIVER')")
     List<RouteResponse> ListAllRoutes(
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -64,6 +65,7 @@ public class RouteController {
     }
 
     @GetMapping("{id}/parent")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_DRIVER')")
     List<ParentResponse>  listRouteParents(@PathVariable UUID id,
                                            @AuthenticationPrincipal Jwt jwt
     ) {
@@ -71,4 +73,10 @@ public class RouteController {
         return listRouteParentsUseCase.execute(id, userId);
     }
 
+    @GetMapping("me")
+    @PreAuthorize("hasAuthority('SCOPE_PARENT')")
+    List<RouteResponse> listParentRoutes(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
+        return listParentRoutesUseCase.execute(userId);
+    }
 }

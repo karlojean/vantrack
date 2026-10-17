@@ -106,6 +106,14 @@ public class TestDataFactory {
         userRouteRepository.save(userRoute);
     }
 
+    public void linkParent(User parent, Route route, String studentName) {
+        UserRoute userRoute = new UserRoute();
+        userRoute.setParent(parent);
+        userRoute.setRoute(route);
+        userRoute.setStudentName(studentName);
+        userRouteRepository.save(userRoute);
+    }
+
     public Trip trip(Route route) {
 
         OffsetDateTime startedAt = OffsetDateTime.now();
