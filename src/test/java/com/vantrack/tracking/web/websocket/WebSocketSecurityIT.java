@@ -78,7 +78,13 @@ class WebSocketSecurityIT extends IntegrationTestSupport {
 
     @AfterEach
     void closeStompResources() {
-        sessions.stream().filter(StompSession::isConnected).forEach(StompSession::disconnect);
+        sessions.stream().filter(StompSession::isConnected).forEach(session -> {
+            try {
+                session.disconnect();
+            } catch (RuntimeException ignored) {
+                // o servidor pode fechar a sessão (frame ERROR) entre o isConnected() e o disconnect()
+            }
+        });
         clients.forEach(WebSocketStompClient::stop);
         schedulers.forEach(ThreadPoolTaskScheduler::stop);
     }
