@@ -25,13 +25,15 @@ public class RouteController {
     private final AddParentUseCase addParentUseCase;
     private final ListRouteParentsUseCase listRouteParentsUseCase;
     private final ListParentRoutesUseCase listParentRoutesUseCase;
+    private final RemoveParentUseCase removeParentUseCase;
 
-    public RouteController(CreateRouteUseCase createRouteUseCase, ListAllRoutesUseCase listAllRoutesUseCase, AddParentUseCase addParentUseCase, ListRouteParentsUseCase listRouteParentsUseCase, ListParentRoutesUseCase listParentRoutesUseCase) {
+    public RouteController(CreateRouteUseCase createRouteUseCase, ListAllRoutesUseCase listAllRoutesUseCase, AddParentUseCase addParentUseCase, ListRouteParentsUseCase listRouteParentsUseCase, ListParentRoutesUseCase listParentRoutesUseCase, RemoveParentUseCase removeParentUseCase) {
         this.createRouteUseCase = createRouteUseCase;
         this.listAllRoutesUseCase = listAllRoutesUseCase;
         this.addParentUseCase = addParentUseCase;
         this.listRouteParentsUseCase = listRouteParentsUseCase;
         this.listParentRoutesUseCase = listParentRoutesUseCase;
+        this.removeParentUseCase = removeParentUseCase;
     }
 
     @PostMapping
@@ -62,6 +64,17 @@ public class RouteController {
     ) {
         UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
         addParentUseCase.execute(id, request, userId);
+    }
+
+    @DeleteMapping("{id}/parent/{parentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void removeParent(
+            @PathVariable UUID id,
+            @PathVariable UUID parentId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        UUID userId = UUID.fromString(Objects.requireNonNull(jwt.getClaimAsString("userId")));
+        removeParentUseCase.execute(id, parentId, userId);
     }
 
     @GetMapping("{id}/parent")
